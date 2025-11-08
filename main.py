@@ -1,5 +1,6 @@
 #programme
 import Player
+import Monster
 
 #librairie
 from math import pi, sin, cos 
@@ -35,6 +36,7 @@ class MyGame(ShowBase):
         
         # Créer le joueur après avoir initialisé les systèmes nécessaires
         self.player = Player.Player(self)
+        self.monster = Monster.Monster(self, (10,10,2), 100, 2, 10, 5, 50)
         
         self.setupSkybox()
 

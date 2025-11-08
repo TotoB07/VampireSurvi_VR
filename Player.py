@@ -9,11 +9,13 @@ def degToRad(deg):
 class Player():
     def __init__(self, game):
         self.game = game  # référence vers la classe principale
+        self.health = 100
+        self.maxhealth = 100
         
         # Physique
         self.zVel = 0.0
         self.gravity = -20.0
-        self.jumpSpeed = 7.0
+        self.jumpSpeed = 10.0
         self.onGround = False
         self.moveSpeed = 10
         
@@ -53,7 +55,7 @@ class Player():
 
     def setupCamera(self):
         self.game.disableMouse()
-        self.game.camera.setPos(0, 0, 3)
+        self.game.camera.setPos(0, 0, 6)
         
         # Crosshair
         self.crosshairs = OnscreenImage(
@@ -137,10 +139,10 @@ class Player():
             entry = self.floorQueue.getEntry(0)
             surfaceZ = entry.getSurfacePoint(self.game.render).getZ()
             dist = self.game.camera.getZ() - surfaceZ
-            if dist <= 1.1 and self.zVel <= 0:
+            if dist <= 2 and self.zVel <= 0:
                 self.onGround = True
                 self.zVel = 0.0
-                newZ = surfaceZ + 1.0
+                newZ = surfaceZ + 2.0
             else:
                 self.onGround = False
 
