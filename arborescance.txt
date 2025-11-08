@@ -1,0 +1,17 @@
+main.py:
+    -> settings.prc          # Configuration Panda3D
+    -> Game.py:
+        -> Menu.py:
+            ->GameManager.py     # Gestion des parties/scores
+            ->SaveManager.py     # Sauvegarde/chargement
+            ->AccountManager.py  # Gestion des comptes
+            ->UIManager.py       # Interface utilisateur des menus
+            ->SoundManager.py    # Gestion des sons/musiques
+
+        -> Party.py:
+            ->Player.py         # Joueur et contrôles
+            ->Monster.py        # Ennemis et IA
+            ->Object.py         # Items et armes
+            ->Map.py           # Terrain et collisions
+            ->ParticleSystem.py # Effets visuels
+            ->HUD.py           # Interface en jeu
