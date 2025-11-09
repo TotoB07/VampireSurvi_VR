@@ -90,8 +90,12 @@ class Player():
         self.game.cTrav.addCollider(self.floorRayNP, self.floorQueue)
 
     def update(self, dt):
-        self.updateMovement(dt)
-        self.updateMouseLook(dt)
+
+        if self.health > 0:
+            self.updateMovement(dt)
+            self.updateMouseLook(dt)
+        else:
+            print("Player is dead")  # Gérer la mort du joueur ici
         
     def updateMovement(self, dt):
         # Mouvement horizontal

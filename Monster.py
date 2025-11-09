@@ -31,6 +31,7 @@ class Monster:
         # - Sons du monstre
 
     def update(self, dt):
+        self.is_alive = not self.isDead()
         if self.is_alive:
             distance_to_player = self.getDistanceToPlayer()
             self.nextAction(dt)
@@ -38,6 +39,8 @@ class Monster:
         else:
             self.unloadMonster()
             
+    def isDead(self):
+        return self.health <= 0
 
     def loadMonster(self):
         self.monster = loader.loadModel('model3d/grass-block.glb')
@@ -91,23 +94,22 @@ class Monster:
     def Movement(self, dt, orientation):
         print("Monster moving " + orientation)
         if orientation == "devant":
-            self.position[0] -= dt * self.speed * sin(degToRad(self.game.camera.getH()))
-            self.position[1] += dt * self.speed * cos(degToRad(self.game.camera.getH()))
+            self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH()))
+            self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
         elif orientation == "derrière":
-            self.position[0] += dt * self.speed * sin(degToRad(self.game.camera.getH()))
-            self.position[1] -= dt * self.speed * cos(degToRad(self.game.camera.getH()))
+            self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
+            self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
         elif orientation == "gauche":
-            self.position[0] -= dt * self.speed * cos(degToRad(self.game.camera.getH()))
-            self.position[1] -= dt * self.speed * sin(degToRad(self.game.camera.getH()))
+            self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
+            self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
         elif orientation == "droite":
-            self.position[0] += dt * self.speed * cos(degToRad(self.game.camera.getH()))
-            self.position[1] += dt * self.speed * sin(degToRad(self.game.camera.getH()))
+            self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
+            self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
 
         self.monster.setPos(self.position[0], self.position[1], self.position[2])   
 
     def attack(self, target):
-        return
-        if isinstance(self.game.player, target):
+        if self.game.player == target:
             target.health -= self.attack_power
             self.is_attacking = True
 
