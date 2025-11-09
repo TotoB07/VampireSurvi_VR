@@ -35,12 +35,14 @@ class MyGame(ShowBase):
         self.generateTerrain()
         
         # Créer le joueur après avoir initialisé les systèmes nécessaires
-        self.player = Player.Player(self)
-        self.monster = Monster.Monster(self, (10,10,2), 100, 2, 10, 5, 50)
+        self.player = Player.Player(self, [0,0,10])
+        self.monster = Monster.Monster(self, [10,10,3], 100, 2, 10, 10, 50)
         
         self.setupSkybox()
 
         taskMgr.add(self.update, "update")
+
+        
 
     def update(self, task):
         dt = globalClock.getDt()
@@ -49,6 +51,7 @@ class MyGame(ShowBase):
             self.cTrav.traverse(render)
             
         self.player.update(dt)
+        self.monster.update(dt)
         
         return task.cont
         

@@ -7,10 +7,11 @@ def degToRad(deg):
     return deg * (pi / 180)
 
 class Player():
-    def __init__(self, game):
+    def __init__(self, game, position):
         self.game = game  # référence vers la classe principale
         self.health = 100
         self.maxhealth = 100
+        self.position = position
         
         # Physique
         self.zVel = 0.0
@@ -128,6 +129,9 @@ class Player():
             self.game.camera.getY() + y_movement,
             self.game.camera.getZ()
         )
+        self.position[0] += x_movement
+        self.position[1] += y_movement
+        
 
         # Gravité
         self.zVel += self.gravity * dt
@@ -147,6 +151,7 @@ class Player():
                 self.onGround = False
 
         self.game.camera.setZ(newZ)
+        self.position[2] = newZ
 
     def updateMouseLook(self, dt):
         if self.cameraSwingActivated:
