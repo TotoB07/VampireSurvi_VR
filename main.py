@@ -1,106 +1,119 @@
-#programme
+#programmes
 import Player
 import Monster
+import Terrain
 
-#librairie
+#librairies
 from math import pi, sin, cos 
 
-#librairie panda3d
+#librairies panda3d
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile 
 from panda3d.core import DirectionalLight, AmbientLight
-from panda3d.core import TransparencyAttrib
-from panda3d.core import WindowProperties
 from panda3d.core  import CollisionTraverser, CollisionNode, CollisionBox, CollisionRay, CollisionHandlerQueue
 from panda3d.core  import CollisionHandlerPusher, CollisionSphere, BitMask32
 from direct.gui.OnscreenImage import OnscreenImage
 
 
-loadPrcFile('settings.prc')
+loadPrcFile('ressources/settings.prc') # charger les paramètres de configuration
 
 def degToRad(deg):
+    """Convertir des degrés en radiants.
+    Args:
+        deg (float): angle en degrés
+    Returns:
+        float: angle en radiants
+    """
     return deg * (pi / 180)
 
 class MyGame(ShowBase):
+    """Classe représentant la partie."""
     def __init__(self):
-        ShowBase.__init__(self)
+        """Initialisation de la partie.
+        Args:
+            None
+        Returns:
+            None
+        """
+        ShowBase.__init__(self) # initialisation classe parent
+        self.block = {} #d ico des differents blocks du jeu
         
-        self.worldMask = BitMask32.bit(1)
-        self.cTrav = CollisionTraverser()
-        self.pusher = CollisionHandlerPusher()
-        self.floorQueue = CollisionHandlerQueue()
+        self.worldMask = BitMask32.bit(1) #creation masque 1er etage
+        self.cTrav = CollisionTraverser() # gestionnaire de collisions
+        self.pusher = CollisionHandlerPusher() # gestionnaire de poussée
+        self.floorQueue = CollisionHandlerQueue() # gestionnaire de collisions pour le sol
 
-        self.loadModels()
-        self.setupLights()
-        self.generateTerrain()
+        self.loadModels() # appel methode loadModels
+        self.setupLights() # appel methode setupLights
         
-        # Créer le joueur après avoir initialisé les systèmes nécessaires
-        self.player = Player.Player(self, [0,0,10])
-        self.monster = Monster.Monster(self, [10,10,3], 100, 2, 10, 10, 50)
+        self.terrain = Terrain.Terrain(self, self.block) # creation terrain
+        self.player = Player.Player(self, [0,0,10]) # creation player
+        self.monster = Monster.Monster(self, [10,10,3], 100, 2, 10, 10, 50) # creation 1 monstre
         
-        self.setupSkybox()
+        self.setupSkybox() # appel methode setupSkybox
 
-        taskMgr.add(self.update, "update")
+        taskMgr.add(self.update, "update") # mise à jour
 
-        
 
     def update(self, task):
-        dt = globalClock.getDt()
+        """update la partie.
+        Args:
+            task (Task): tâche en cours
+        Returns:
+            Task.cont: continuer la tâche
+        """
+        dt = globalClock.getDt() # temps entre chaque frame
         
-        if hasattr(self, "cTrav"):
-            self.cTrav.traverse(render)
+        if hasattr(self, "cTrav"): # vérifier si cTrav est défini
+            self.cTrav.traverse(render) 
             
-        self.player.update(dt)
-        self.monster.update(dt)
+        self.player.update(dt) #update le player
+        self.monster.update(dt) #update le monstre
         
         return task.cont
         
     def setupSkybox(self):
-        skybox = loader.loadModel('skybox/skybox.egg')
-        skybox.setScale(500)
-        skybox.setBin('background', 1)
-        skybox.setDepthWrite(0)
-        skybox.setLightOff()
-        skybox.reparentTo(render)
-
-    def generateTerrain(self):
-        for z in range(10):
-            for y in range(20):
-                for x in range(20):
-                    newBlockNode = render.attachNewNode('new-block_placeholder')
-                    newBlockNode.setPos(x*2 -20, y*2 -20, -z *2)
-
-                    if z == 0:
-                        self.grassBlock.instanceTo(newBlockNode)
-                    elif z < 4:
-                        self.dirtBlock.instanceTo(newBlockNode)
-                    else:
-                        self.stoneBlock.instanceTo(newBlockNode)
-                    
-                    blockSolid = CollisionBox((-1,-1,-1), (1,1,1))
-                    blockNode = CollisionNode('block-collision-node')
-                    blockNode.addSolid(blockSolid)
-                    # rendre ces nodes "into" pour la mask du monde
-                    blockNode.setIntoCollideMask(self.worldMask)
-                    collider = newBlockNode.attachNewNode(blockNode)
-                    collider.setPythonTag('owner', newBlockNode)
+        """création ciel en fond.
+        Args:
+            None
+        Returns:
+            None
+        """
+        skybox = loader.loadModel('skybox/skybox.egg')  # charger le modèle de la skybox
+        skybox.setScale(500) # mettre la taille de la skybox a 500
+        skybox.setBin('background', 1) # définir la skybox comme arrière-plan
+        skybox.setDepthWrite(0) # désactiver l'écriture de la profondeur
+        skybox.setLightOff() # désactiver l'éclairage pour la skybox
+        skybox.reparentTo(render) # attacher la skybox au render
 
     def loadModels(self):
-        self.grassBlock = loader.loadModel('model3d/grass-block.glb')
-        self.dirtBlock = loader.loadModel('model3d/dirt-block.glb')
-        self.stoneBlock = loader.loadModel('model3d/stone-block.glb')
-        self.sandBlock = loader.loadModel('model3d/sand-block.glb')
+        """chargement des modèles 3D.
+        Args:
+            None
+        Returns:
+            None
+        """
+        self.block["grassBlock"] = loader.loadModel('model3d/grass-block.glb') # charger le model grass block
+        self.block["dirtBlock"] = loader.loadModel('model3d/dirt-block.glb') # charger le model dirt block
+        self.block["stoneBlock"] = loader.loadModel('model3d/stone-block.glb') # charger le model stone block
+        self.block["sandBlock"] = loader.loadModel('model3d/sand-block.glb') # charger le model sand block
 
     def setupLights(self):
-        mainLight = DirectionalLight('mainLight')
-        mainLightNodePath = render.attachNewNode(mainLight)
-        mainLightNodePath.setHpr(30, -60, 0)
-        render.setLight(mainLightNodePath)
+        """setup les lumieres.
+        Args:
+            None
+        Returns:
+            None
+        """
+        mainLight = DirectionalLight('mainLight') # creer une lumiere directionnelle
+        mainLightNodePath = render.attachNewNode(mainLight) # attacher la lumiere au render
+        mainLightNodePath.setHpr(30, -60, 0) # orienter la lumiere
+        render.setLight(mainLightNodePath) # activer la lumiere dans le render
 
-        ambientLight = AmbientLight('ambient light')
-        ambientLight.setColor((0.3, 0.3, 0.3, 1))
-        ambientLightNodePath = render.attachNewNode(ambientLight)
-        render.setLight(ambientLightNodePath)
+        ambientLight = AmbientLight('ambient light') # creer une lumiere ambiante
+        ambientLight.setColor((0.3, 0.3, 0.3, 1)) # definir la couleur de la lumiere ambiante
+        ambientLightNodePath = render.attachNewNode(ambientLight) # attacher la lumiere au render
+        render.setLight(ambientLightNodePath) # activer la lumiere dans le render
 
 if __name__ == "__main__":
     app = MyGame()
