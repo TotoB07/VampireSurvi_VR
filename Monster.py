@@ -43,6 +43,9 @@ class Monster:
         # État
         self.is_alive = True # etat du moponstre
         self.is_attacking = False # etat de son attaque
+        self.initialTimeToReload = 3 # temps initial pour que le monstre reattaque
+        self.timeToReload = self.initialTimeToReload # temps avant que le monstre reattaque
+        
 
         self.loadMonster() # chargement du monstre
 
@@ -61,6 +64,11 @@ class Monster:
         self.is_alive = not self.isDead() # on regarde s'il est toujours en vie
         if self.is_alive: 
             self.nextAction(dt) # effectuer la prochaine action
+            if self.is_attacking:
+                self.timeToReload -= dt
+            if self.timeToReload <= 0:
+                self.timeToReload = self.initialTimeToReload
+                self.is_attacking = False
         else:
             self.unloadMonster() # supprimer le monstre
             
@@ -179,4 +187,14 @@ class Monster:
         if self.game.player == target and not self.is_attacking: # si c le joueur
             target.health -= self.attack_power # on lui enleve de la vie 
             self.is_attacking = True # le monstre est en train d'attaquer
+            print("attaque")
+
+    def changeHealth(self, degats):
+        """modifier la vie du monstre.
+        Args:
+            degat(int): degats que se prend le monstre
+        Returns:
+            None
+        """
+        self.health -= degats
 

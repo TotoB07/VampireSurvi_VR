@@ -34,6 +34,7 @@ class Player():
         self.health = 100 # santé actuelle du joueur
         self.maxhealth = 100 # santé maximale du joueur
         self.position = position # position du joueur [x,y,z]
+        self.wapon = 10
         
         # Physique
         self.zVel = 0.0 # vitesse verticale du joueur
@@ -65,12 +66,14 @@ class Player():
             "left": False, # à gauche
             "right": False, # à droite
             "up": False, # au dessus 
-            "down": False # en dessous
+            "down": False, # en dessous
+            "attaque": False # attaque du joueur
         }
         
         # Binding des touches
-        self.game.accept("escape", self.releaseMouse) # touche pour activer la sourie 
-        self.game.accept("mouse1", self.captureMouse) # touche pour desactiver la sourie 
+        self.game.accept("escape", self.releaseMouse) # touche pour desactiver la sourie 
+        self.game.accept("mouse1", self.captureMouse) # touche pour activer la sourie 
+        self.game.accept("mouse3", self.updateKeyMap, ["attaque", True]) # touche pour attaquer
         self.game.accept("z", self.updateKeyMap, ["forward", True]) # touche pour avancer
         self.game.accept("z-up", self.updateKeyMap, ["forward", False]) # touche pour arreter d'avancer
         self.game.accept("s", self.updateKeyMap, ["backward", True]) # touche pour reculer
@@ -141,6 +144,17 @@ class Player():
         if self.health > 0: # regarde si le joueur n'est pas mort
             self.updateMovement(dt) # on modifie sa position dans l'espace
             self.updateMouseLook(dt) # on modifie sa vision
+            #logique pour l'attaque ( a modifier quand y'aura pls monstre )
+            if self.keyMap["attaque"]: # si le joueur appuye sur la touche pour attaquer
+                distance = self.game.monster.getDistanceToPlayer() # on regarde la distance
+                # on regarde si le joueur est a la bonne distance
+                Is_attack_range = True
+                for elt in distance:
+                    if abs(elt) > 5: # a modifier: cela dependra de l'arme
+                        Is_attack_range = False # le monstre est trop loin
+                if Is_attack_range:
+                    self.attaque(self.game.monster) # on attaque
+                self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
         else:
             print("Player is dead")  # Gérer la mort du joueur ici
         
@@ -213,6 +227,12 @@ class Player():
         self.position[2] = newZ #axe Z
 
     def updateMouseLook(self, dt):
+        """update la vision du joueur
+        Args:
+            dt (float): temps qui c passer depuis la derniere update
+        Returns:
+            None
+        """
         if self.cameraSwingActivated: 
             if not self.game.win.getProperties().getForeground(): # verifier si la fenetre est en arriere plan
                 self.releaseMouse() #liberation de la sourie
@@ -240,9 +260,22 @@ class Player():
                 self.game.win.movePointer(0, cx, cy) # repositionner la souris au centre
 
     def updateKeyMap(self, key, value):
+        """charger les touches que le joueur utilise.
+        Args:
+            key (str): nom de l'action
+            value (bool): valeur de la key
+        Returns:
+            None
+        """
         self.keyMap[key] = value # mettre a jour l'état de la touche
 
     def captureMouse(self):
+        """activer les mouvements de la camera.
+        Args:
+            None
+        Returns:
+            None
+        """
         self.cameraSwingActivated = True # activer le mouvement de la camera
         properties = WindowProperties() # creer des proprietes de fenetre
         properties.setCursorHidden(True) # cacher le curseur
@@ -253,8 +286,24 @@ class Player():
         self.game.win.movePointer(0, int(wp.getXSize() / 2), int(wp.getYSize() / 2)) # positionner la souris au centre
 
     def releaseMouse(self):
+        """desactiver les mouvements de la camera.
+        Args:
+            None
+        Returns:
+            None
+        """
         self.cameraSwingActivated = False # desactiver le mouvement de la camera
         properties = WindowProperties() # creer des proprietes de fenetre
         properties.setCursorHidden(False) # afficher le curseur
         properties.setMouseMode(WindowProperties.M_absolute) # liberer la souris
         self.game.win.requestProperties(properties) # appliquer les proprietes a la fenetre
+
+    def attaque(self, target):
+        """attaque du joueur.
+        Args:
+            target (Target): cible
+        Returns:
+            None
+        """
+        if target == self.game.monster:
+            self.game.monster.changeHealth(self.wapon)
