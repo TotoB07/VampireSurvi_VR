@@ -34,7 +34,8 @@ class Player():
         self.health = 100 # santé actuelle du joueur
         self.maxhealth = 100 # santé maximale du joueur
         self.position = position # position du joueur [x,y,z]
-        self.wapon = 10
+        self.is_attacking = False
+        self.weapon = None # arme du joueur
         
         # Physique
         self.zVel = 0.0 # vitesse verticale du joueur
@@ -144,17 +145,29 @@ class Player():
         if self.health > 0: # regarde si le joueur n'est pas mort
             self.updateMovement(dt) # on modifie sa position dans l'espace
             self.updateMouseLook(dt) # on modifie sa vision
-            #logique pour l'attaque ( a modifier quand y'aura pls monstre )
-            if self.keyMap["attaque"]: # si le joueur appuye sur la touche pour attaquer
+
+            # logique pour l'attaque ( a modifier quand y'aura pls monstre )
+            if self.keyMap["attaque"] and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
                 distance = self.game.monster.getDistanceToPlayer() # on regarde la distance
                 # on regarde si le joueur est a la bonne distance
                 Is_attack_range = True
                 for elt in distance:
-                    if abs(elt) > 5: # a modifier: cela dependra de l'arme
+                    if self.weapon == None and abs(elt) > 3: # si le joueur n'a pas d'arme
+                        Is_attack_range = False # le monstre est trop loin
+                    elif self.weapon != None and abs(elt) > self.weapon.range: # si le joueur a une arme
                         Is_attack_range = False # le monstre est trop loin
                 if Is_attack_range:
                     self.attaque(self.game.monster) # on attaque
+                    self.is_attacking = True # on indique su'il est en train d'attaquer
                 self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
+
+            # logique pour savoir s'il est tjs en train d'attaquer
+            if self.is_attacking:
+                if self.weapon.cooldown <= 0: # si plus de cooldown alors on peut reattaquer
+                    self.is_attacking = False
+                    self.weapon.cooldown = self.weapon.initialCooldown # on remet le cooldown a son etat de depart
+                else:
+                    self.weapon.cooldown -= dt # sinon, on enleve le temps qui c'est passé
         else:
             print("Player is dead")  # Gérer la mort du joueur ici
         
@@ -306,4 +319,7 @@ class Player():
             None
         """
         if target == self.game.monster:
-            self.game.monster.changeHealth(self.wapon)
+            if self.weapon != None:
+                self.game.monster.changeHealth(self.weapon.degats)
+            else:
+                self.game.monster.changeHealth(2)

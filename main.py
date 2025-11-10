@@ -2,6 +2,7 @@
 import Player
 import Monster
 import Terrain
+import Weapon
 
 #librairies
 from math import pi, sin, cos 
@@ -49,6 +50,9 @@ class MyGame(ShowBase):
         self.terrain = Terrain.Terrain(self, self.block) # creation terrain
         self.player = Player.Player(self, [0,0,10]) # creation player
         self.monster = Monster.Monster(self, [10,10,3], 100, 2, 10, 10, 50) # creation 1 monstre
+        self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 10, 4, 2.0) # creation arme
+        
+        self.player.weapon = self.weapon # assigner les degats de l'arme au joueur
         
         self.setupSkybox() # appel methode setupSkybox
 

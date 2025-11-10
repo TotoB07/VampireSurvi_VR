@@ -187,7 +187,6 @@ class Monster:
         if self.game.player == target and not self.is_attacking: # si c le joueur
             target.health -= self.attack_power # on lui enleve de la vie 
             self.is_attacking = True # le monstre est en train d'attaquer
-            print("attaque")
 
     def changeHealth(self, degats):
         """modifier la vie du monstre.
