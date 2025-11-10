@@ -1,46 +1,96 @@
+#librairies
+import random
+from perlin_noise import PerlinNoise
+
 #librairies panda3d
-from panda3d.core  import CollisionNode, CollisionBox
+from panda3d.core import CollisionNode, CollisionBox, BitMask32
 
 class Terrain():
     """Classe représentant le terrain."""
-    def __init__(self, game, block):
+    def __init__(self, game, blocks):
         """Initialisation du terrain.
         Args:
             game (Game): reference vers la classe principale
-            block (dico): block du jeu
+            blocks (dict): dictionnaire avec les blocks du jeu
         Returns:
             None
         """
-        self.game = game # instance de la partie
-        self.block = block # dico avec les blocks du jeu
-
-        self.generateTerrain() # generation du terrain
+        self.game = game
+        self.blocks = blocks
         
-
+        # Paramètres du terrain
+        self.terrain_width = 50
+        self.terrain_length = 50
+        self.max_height = 10
+        self.block_size = 2
+        
+        # Seed pour la génération aléatoire reproductible
+        self.seed = random.randint(0, 10000)
+        self.noise = PerlinNoise(octaves=4, seed=self.seed)
+        
+        self.terrain_blocks = []  # Liste pour garder track des blocks
+        self.generateTerrain()
 
     def generateTerrain(self):
-        """generation du terrain.
-        Args:
-            None
-        Returns:
-            None
-        """
-        for z in range(10):
-            for y in range(20):
-                for x in range(20):
-                    newBlockNode = render.attachNewNode('new-block_placeholder') # creation d'un noeud
-                    newBlockNode.setPos(x*2 -20, y*2 -20, -z *2) # position du noeud
-
-                    if z == 0:
-                        self.block["grassBlock"].instanceTo(newBlockNode)  # mettre le noeud comme un grassBlock
-                    elif z < 4:
-                        self.block["dirtBlock"].instanceTo(newBlockNode) # mettre le noeud comme un dirtBlock
-                    else:
-                        self.block["stoneBlock"].instanceTo(newBlockNode) # mettre le noeud comme un stoneBlock
+        """Génère le terrain avec hauteurs aléatoires (bruit Perlin)."""
+        # Créer un dossier pour le terrain
+        terrain_node = self.game.render.attachNewNode('terrain')
+        
+        for y in range(self.terrain_length):
+            for x in range(self.terrain_width):
+                # Calculer la hauteur avec le bruit Perlin
+                noise_value = self.noise([x * 0.1, y * 0.1])
+                
+                # Convertir en hauteur entière (0 à max_height)
+                height = int((noise_value + 1) / 2 * self.max_height)
+                height = max(0, min(height, self.max_height))
+                
+                # Générer les blocs de la surface jusqu'à la bedrock
+                for z in range(height + 1):
+                    block_pos_x = x * self.block_size - (self.terrain_width * self.block_size / 2)
+                    block_pos_y = y * self.block_size - (self.terrain_length * self.block_size / 2)
+                    block_pos_z = -z * self.block_size
                     
-                    blockSolid = CollisionBox((-1,-1,-1), (1,1,1)) # creation de la boite de collision
-                    blockNode = CollisionNode('block-collision-node') # creation du node de collision
-                    blockNode.addSolid(blockSolid) # ajout de la boite de collision au node
-                    blockNode.setIntoCollideMask(self.game.worldMask) # definir le masque de collision
-                    collider = newBlockNode.attachNewNode(blockNode) # attacher le node de collision au noeud du block
-                    collider.setPythonTag('owner', newBlockNode) # tag python pour référencer le block
+                    # Créer le noeud du bloc
+                    block_node = terrain_node.attachNewNode(f'block_{x}_{y}_{z}')
+                    block_node.setPos(block_pos_x, block_pos_y, block_pos_z)
+                    
+                    # Déterminer le type de bloc
+                    block_type = self.getBlockType(z, height)
+                    
+                    # Attacher le modèle du bloc
+                    self.blocks["grassBlock"].instanceTo(block_node)
+                    
+                    # Ajouter la collision
+                    self.addBlockCollision(block_node)
+                    
+                    # Garder une référence
+                    self.terrain_blocks.append({
+                        'node': block_node,
+                        'pos': (x, y, z),
+                        'type': block_type
+                    })
+
+    def getBlockType(self, z, surface_height):
+        """Détermine le type de bloc selon sa profondeur."""
+        if z == surface_height:
+            return 'grass'
+        elif z < surface_height and z > surface_height - 3:
+            return 'dirt'
+        else:
+            return 'stone'
+
+    def addBlockCollision(self, block_node):
+        """Ajoute une collision à un bloc."""
+        blockSolid = CollisionBox((-1, -1, -1), (1, 1, 1))
+        blockNode = CollisionNode('block-collision')
+        blockNode.addSolid(blockSolid)
+        blockNode.setIntoCollideMask(self.game.worldMask)
+        collider = block_node.attachNewNode(blockNode)
+        collider.setPythonTag('owner', block_node)
+
+    def unloadTerrain(self):
+        """Décharge le terrain de la mémoire."""
+        for block in self.terrain_blocks:
+            block['node'].removeNode()
+        self.terrain_blocks.clear()
