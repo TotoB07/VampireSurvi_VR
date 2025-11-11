@@ -49,8 +49,11 @@ class MyGame(ShowBase):
         
         self.terrain = Terrain.Terrain(self, self.block) # creation terrain
         self.player = Player.Player(self, [0,0,10]) # creation player
-        self.monster = Monster.Monster(self, [10,10,3], 100, 2, 10, 10, 50) # creation 1 monstre
-        self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 10, 4, 2.0) # creation arme
+        self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 40, 4, 2.0) # creation arme
+        self.monsters = []
+
+        for i in range(1,3):
+            self.monsters.append(Monster.Monster(self, [10*i,10,3], 100, 2, 10, 10, 50)) # creation monstre
         
         self.player.weapon = self.weapon # assigner les degats de l'arme au joueur
         
@@ -72,7 +75,8 @@ class MyGame(ShowBase):
             self.cTrav.traverse(render) 
             
         self.player.update(dt) #update le player
-        self.monster.update(dt) #update le monstre
+        for monster in self.monsters:
+            monster.update(dt) #update le monstre
         
         return task.cont
         

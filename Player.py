@@ -148,18 +148,19 @@ class Player():
 
             # logique pour l'attaque ( a modifier quand y'aura pls monstre )
             if self.keyMap["attaque"] and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
-                distance = self.game.monster.getDistanceToPlayer() # on regarde la distance
-                # on regarde si le joueur est a la bonne distance
-                Is_attack_range = True
-                for elt in distance:
-                    if self.weapon == None and abs(elt) > 3: # si le joueur n'a pas d'arme
-                        Is_attack_range = False # le monstre est trop loin
-                    elif self.weapon != None and abs(elt) > self.weapon.range: # si le joueur a une arme
-                        Is_attack_range = False # le monstre est trop loin
-                if Is_attack_range:
-                    self.attaque(self.game.monster) # on attaque
-                    self.is_attacking = True # on indique su'il est en train d'attaquer
-                self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
+                for monster in self.game.monsters:
+                    distance = monster.getDistanceToPlayer() # on regarde la distance
+                    # on regarde si le joueur est a la bonne distance
+                    Is_attack_range = True
+                    for elt in distance:
+                        if self.weapon == None and abs(elt) > 3: # si le joueur n'a pas d'arme
+                            Is_attack_range = False # le monstre est trop loin
+                        elif self.weapon != None and abs(elt) > self.weapon.range: # si le joueur a une arme
+                            Is_attack_range = False # le monstre est trop loin
+                    if Is_attack_range:
+                        self.attaque(monster) # on attaque
+                        self.is_attacking = True # on indique su'il est en train d'attaquer
+                    self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
 
             # logique pour savoir s'il est tjs en train d'attaquer
             if self.is_attacking:
@@ -318,8 +319,9 @@ class Player():
         Returns:
             None
         """
-        if target == self.game.monster:
+        if target in self.game.monsters:
             if self.weapon != None:
-                self.game.monster.changeHealth(self.weapon.degats)
+                target.changeHealth(self.weapon.degats)
             else:
-                self.game.monster.changeHealth(2)
+                target.changeHealth(2)
+        
