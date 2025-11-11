@@ -31,6 +31,7 @@ class Monster:
         Returns:
             None
         """
+        self.screen = game.screen
         self.game = game  # référence vers la partie
         self.position = position # position du monstre
         self.type = monster_type # type du monstre
@@ -89,7 +90,7 @@ class Monster:
             None
         """
         self.monster = loader.loadModel('model3d/grass-block.glb') # chargement model du monstre
-        self.monster.reparentTo(self.game.render)  # Attacher au render
+        self.monster.reparentTo(self.screen.render)  # Attacher au render
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # placer le monstre au position
         
         blockSolid = CollisionBox((-1,-1,-1), (1,1,1)) # creation boxe de collision

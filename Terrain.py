@@ -17,6 +17,7 @@ class Terrain():
         """
         self.game = game
         self.blocks = blocks
+        self.screen = game.screen
         
         # Paramètres du terrain
         self.terrain_width = 50
@@ -34,7 +35,7 @@ class Terrain():
     def generateTerrain(self):
         """Génère le terrain avec hauteurs aléatoires (bruit Perlin)."""
         # Créer un dossier pour le terrain
-        terrain_node = self.game.render.attachNewNode('terrain')
+        terrain_node = self.screen.render.attachNewNode('terrain')
         
         for y in range(self.terrain_length):
             for x in range(self.terrain_width):
@@ -49,7 +50,7 @@ class Terrain():
                 for z in range(height + 1):
                     block_pos_x = x * self.block_size - (self.terrain_width * self.block_size / 2)
                     block_pos_y = y * self.block_size - (self.terrain_length * self.block_size / 2)
-                    block_pos_z = -z * self.block_size
+                    block_pos_z = (z * self.block_size) - self.max_height
                     
                     # Créer le noeud du bloc
                     block_node = terrain_node.attachNewNode(f'block_{x}_{y}_{z}')
@@ -59,7 +60,7 @@ class Terrain():
                     block_type = self.getBlockType(z, height)
                     
                     # Attacher le modèle du bloc
-                    self.blocks["grassBlock"].instanceTo(block_node)
+                    self.blocks[block_type].instanceTo(block_node)
                     
                     # Ajouter la collision
                     self.addBlockCollision(block_node)
@@ -74,11 +75,11 @@ class Terrain():
     def getBlockType(self, z, surface_height):
         """Détermine le type de bloc selon sa profondeur."""
         if z == surface_height:
-            return 'grass'
+            return 'grassBlock'
         elif z < surface_height and z > surface_height - 3:
-            return 'dirt'
+            return 'dirtBlock'
         else:
-            return 'stone'
+            return 'stoneBlock'
 
     def addBlockCollision(self, block_node):
         """Ajoute une collision à un bloc."""
