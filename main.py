@@ -9,12 +9,11 @@ from math import pi, sin, cos
 
 #librairies panda3d
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile 
+from panda3d.core import loadPrcFile, loadPrcFileData
 from panda3d.core import DirectionalLight, AmbientLight
-from panda3d.core  import CollisionTraverser, CollisionNode, CollisionBox, CollisionRay, CollisionHandlerQueue
-from panda3d.core  import CollisionHandlerPusher, CollisionSphere, BitMask32
+from panda3d.core  import CollisionTraverser, CollisionHandlerQueue
+from panda3d.core  import CollisionHandlerPusher, BitMask32
 from direct.gui.OnscreenImage import OnscreenImage
-
 
 loadPrcFile('ressources/settings.prc') # charger les paramètres de configuration
 

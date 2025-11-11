@@ -309,6 +309,8 @@ class Player():
         self.cameraSwingActivated = False # desactiver le mouvement de la camera
         properties = WindowProperties() # creer des proprietes de fenetre
         properties.setCursorHidden(False) # afficher le curseur
+        properties.setSize(1024,768)
+        properties.setFullscreen(True)
         properties.setMouseMode(WindowProperties.M_absolute) # liberer la souris
         self.game.win.requestProperties(properties) # appliquer les proprietes a la fenetre
 
