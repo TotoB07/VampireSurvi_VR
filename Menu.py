@@ -66,12 +66,29 @@ class Menu(ShowBase):
             text_fg=(1, 1, 1, 1)
         )
 
-    def destroy_menu(self):
+    def supprimer_boutons(self):
         self.message.destroy()
-        self.bouton_jouer.destroy()
-        self.bouton_quitter.destroy()
-        self.bouton_credit.destroy()
-        self.bouton_settings.destroy()
+        if hasattr(self, 'bouton_jouer'):
+            self.bouton_jouer.destroy()
+        if hasattr(self, 'bouton_credit'):
+            self.bouton_credit.destroy()
+        if hasattr(self, 'bouton_quitter'):
+            self.bouton_quitter.destroy()
+        if hasattr(self, 'bouton_settings'):
+            self.bouton_settings.destroy()
+        if hasattr(self, 'retour_bouton'):
+            self.retour_bouton.destroy()
+        if hasattr(self, 'option_resolution'):
+            self.option_resolution.destroy()
+        if hasattr(self, 'message'):
+            self.message.destroy()
+        if hasattr(self, 'message_touch'):
+            for msg in self.message_touch:
+                msg.destroy()
+        if hasattr(self, 'bouton_touche'):
+            for btn in self.bouton_touche:
+                btn.destroy()
+        
 
     def lancer_partie(self):
         self.destroy_menu()
@@ -84,7 +101,16 @@ class Menu(ShowBase):
         self.userExit()
 
     def ouvrir_settings(self):
-        self.destroy_menu()
+        self.supprimer_boutons()
+
+        self.retour_bouton = DirectButton(
+            text="Retour",
+            scale=0.07,
+            pos=(-1.6, 0, 0.9),
+            command=self.fermer_settings,
+            frameColor=(0.2, 0.4, 0.8, 1),
+            text_fg=(1, 1, 1, 1)
+        )
 
         self.message = OnscreenText(
             text="Resolution :",
@@ -125,18 +151,14 @@ class Menu(ShowBase):
             self.bouton_touche.append(bouton)
 
     def fermer_settings(self):
-        self.message.destroy()
-        self.option_resolution.destroy()
-        for msg in self.message_touch:
-            msg.destroy()
-        for btn in self.bouton_touche:
-            btn.destroy()
-        
+        self.supprimer_boutons()
+        self.create_menu()
+
             
     def changer_touche(self, action):
         def on_key_pressed(key):
             self.bindings[action] = key
-            self.fermer_settings()
+            self.supprimer_boutons()
             self.ouvrir_settings()
 
         # Liste des touches à écouter
@@ -154,7 +176,6 @@ class Menu(ShowBase):
 
 
     def changer_resolution(self, choix):
-        print(f"Résolution choisie : {choix}")
         largeur, hauteur = map(int, choix.split('x'))
 
         # Créer un nouvel objet WindowProperties
