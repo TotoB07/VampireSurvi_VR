@@ -73,21 +73,21 @@ class Player():
         }
         
         # Binding des touches
-        self.screen.accept("escape", self.releaseMouse) # touche pour desactiver la sourie 
-        self.screen.accept("mouse1", self.captureMouse) # touche pour activer la sourie 
-        self.screen.accept("mouse3", self.updateKeyMap, ["attaque", True]) # touche pour attaquer
-        self.screen.accept("z", self.updateKeyMap, ["forward", True]) # touche pour avancer
-        self.screen.accept("z-up", self.updateKeyMap, ["forward", False]) # touche pour arreter d'avancer
-        self.screen.accept("s", self.updateKeyMap, ["backward", True]) # touche pour reculer
-        self.screen.accept("s-up", self.updateKeyMap, ["backward", False]) # touche pour arreter de reculer
-        self.screen.accept("q", self.updateKeyMap, ["left", True]) # touche pour aller à gauche
-        self.screen.accept("q-up", self.updateKeyMap, ["left", False]) # touche pour arreter d'aller à gauche
-        self.screen.accept("d", self.updateKeyMap, ["right", True]) # touche pour aller à droite
-        self.screen.accept("d-up", self.updateKeyMap, ["right", False]) # touche pour arreter d'aller à droite
-        self.screen.accept("space", self.updateKeyMap, ["up", True]) # touche pour sauter
-        self.screen.accept("space-up", self.updateKeyMap, ["up", False]) # touche pour arreter de sauter
-        self.screen.accept("lshift", self.updateKeyMap, ["down", True]) # touche pour se baisser
-        self.screen.accept("lshift-up", self.updateKeyMap, ["down", False]) # touche pour arreter de se baisser
+        self.screen.accept(self.game.menu.bindings["Sortir"], self.releaseMouse) # touche pour desactiver la sourie 
+        self.screen.accept(self.game.menu.bindings["mouse1"], self.captureMouse) # touche pour activer la sourie 
+        self.screen.accept(self.game.menu.bindings["Attaque"], self.updateKeyMap, ["attaque", True]) # touche pour attaquer
+        self.screen.accept(self.game.menu.bindings["Avancer"], self.updateKeyMap, ["forward", True]) # touche pour avancer
+        self.screen.accept(self.game.menu.bindings["Avancer"] + "-up", self.updateKeyMap, ["forward", False]) # touche pour arreter d'avancer
+        self.screen.accept(self.game.menu.bindings["Reculer"], self.updateKeyMap, ["backward", True]) # touche pour reculer
+        self.screen.accept(self.game.menu.bindings["Reculer"] + "-up", self.updateKeyMap, ["backward", False]) # touche pour arreter de reculer
+        self.screen.accept(self.game.menu.bindings["Gauche"], self.updateKeyMap, ["left", True]) # touche pour aller à gauche
+        self.screen.accept(self.game.menu.bindings["Gauche"] + "-up", self.updateKeyMap, ["left", False]) # touche pour arreter d'aller à gauche
+        self.screen.accept(self.game.menu.bindings["Droite"], self.updateKeyMap, ["right", True]) # touche pour aller à droite
+        self.screen.accept(self.game.menu.bindings["Droite"] + "-up", self.updateKeyMap, ["right", False]) # touche pour arreter d'aller à droite
+        self.screen.accept(self.game.menu.bindings["Saut"], self.updateKeyMap, ["up", True]) # touche pour sauter
+        self.screen.accept(self.game.menu.bindings["Saut"] + "-up", self.updateKeyMap, ["up", False]) # touche pour arreter de sauter
+        self.screen.accept(self.game.menu.bindings["Accroupir"], self.updateKeyMap, ["down", True]) # touche pour se baisser
+        self.screen.accept(self.game.menu.bindings["Accroupir"]+ "-up", self.updateKeyMap, ["down", False]) # touche pour arreter de se baisser
 
     def setupCamera(self, position):
         """Initialisation de la camera du joueur.
