@@ -91,7 +91,7 @@ class Menu(ShowBase):
         
 
     def lancer_partie(self):
-        self.destroy_menu()
+        self.supprimer_boutons()
         game = Game.MyGame(self)
 
     def credit(self):

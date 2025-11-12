@@ -20,14 +20,14 @@ class Terrain():
         self.screen = game.screen
         
         # Paramètres du terrain
-        self.terrain_width = 50
-        self.terrain_length = 50
-        self.max_height = 10
+        self.terrain_width = 75
+        self.terrain_length = 75
+        self.max_height = 5
         self.block_size = 2
         
         # Seed pour la génération aléatoire reproductible
         self.seed = random.randint(0, 10000)
-        self.noise = PerlinNoise(octaves=4, seed=self.seed)
+        self.noise = PerlinNoise(octaves=0.3, seed=self.seed)
         
         self.terrain_blocks = []  # Liste pour garder track des blocks
         self.generateTerrain()
@@ -76,7 +76,7 @@ class Terrain():
         """Détermine le type de bloc selon sa profondeur."""
         if z == surface_height:
             return 'grassBlock'
-        elif z < surface_height and z > surface_height - 3:
+        elif z < surface_height and z > surface_height - 3 :
             return 'dirtBlock'
         else:
             return 'stoneBlock'
