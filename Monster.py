@@ -37,7 +37,7 @@ class Monster:
         self.type = monster_type # type du monstre
         self.health = health # santé du monstre
         self.speed = speed # vitesse du monstre
-        self.attack_power = attack_power # nombre de degats
+        self.attack_power = 50 # nombre de degats
         self.attack_range = attack_range # range de l'attaque
         self.xp_value = xp_value # gain d'xp
 

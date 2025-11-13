@@ -18,7 +18,8 @@ class Menu(ShowBase):
             "Gauche": "q",
             "Droite": "d",
             "Saut": "space",
-            "Accroupir": "lshift",
+            "Accroupir": "lcontrol",
+            "Sprint": "lshift",
             "Attaque": "mouse3",
             "mouse1": "mouse1"
         }

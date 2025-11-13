@@ -3,8 +3,9 @@ from math import pi, sin, cos
 
 #librairies panda3d
 from panda3d.core import CollisionNode, CollisionSphere, CollisionRay, BitMask32
-from panda3d.core import TransparencyAttrib, WindowProperties
+from panda3d.core import TransparencyAttrib, WindowProperties, CardMaker
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.OnscreenText import OnscreenText
 
 def degToRad(deg):
     """Convertir des degrés en radiants.
@@ -44,6 +45,7 @@ class Player():
         self.jumpSpeed = 10.0 # vitesse du joueur sur le plan vertical
         self.onGround = False # savoir si le joueur est dans les airs
         self.moveSpeed = 10 #v itesse du joueur sur le plan horizontal
+        self.initialSpeed = 10
         
         # Contrôles
         self.setupControls() # configuration des contrôles
@@ -52,6 +54,20 @@ class Player():
         # État de la souris
         self.cameraSwingActivated = False # savoir si la sourie est dans le jeu ou non
         self.cameraSwingFactor = 10 # facteur de la sourie
+
+        #Barre de vie
+        cm = CardMaker("fond")
+        cm.setFrame(0, 1, 0, 0.05)
+        self.fond = aspect2d.attachNewNode(cm.generate())
+        self.fond.setPos(-0.5, 0, -0.9)
+        self.fond.setColor(0.2, 0.2, 0.2, 1)
+
+        # Barre rouge
+        cm2 = CardMaker("barre")
+        cm2.setFrame(0, 1, 0, 0.05)
+        self.barre = aspect2d.attachNewNode(cm2.generate())
+        self.barre.setPos(-0.5, 0, -0.9)
+        self.barre.setColor(1, 0, 0, 1)
 
     def setupControls(self):
         """Initialisation des touches de controles.
@@ -69,7 +85,8 @@ class Player():
             "right": False, # à droite
             "up": False, # au dessus 
             "down": False, # en dessous
-            "attaque": False # attaque du joueur
+            "attaque": False, # attaque du joueur
+            "Sprint": False
         }
         
         # Binding des touches
@@ -88,6 +105,8 @@ class Player():
         self.screen.accept(self.game.menu.bindings["Saut"] + "-up", self.updateKeyMap, ["up", False]) # touche pour arreter de sauter
         self.screen.accept(self.game.menu.bindings["Accroupir"], self.updateKeyMap, ["down", True]) # touche pour se baisser
         self.screen.accept(self.game.menu.bindings["Accroupir"]+ "-up", self.updateKeyMap, ["down", False]) # touche pour arreter de se baisser
+        self.screen.accept(self.game.menu.bindings["Sprint"], self.updateKeyMap, ["Sprint", True]) # touche pour se baisser
+        self.screen.accept(self.game.menu.bindings["Sprint"]+ "-up", self.updateKeyMap, ["Sprint", False]) # touche pour arreter de se baisser
 
     def setupCamera(self, position):
         """Initialisation de la camera du joueur.
@@ -143,9 +162,11 @@ class Player():
         Returns:
             None
         """
+        
         if self.health > 0: # regarde si le joueur n'est pas mort
             self.updateMovement(dt) # on modifie sa position dans l'espace
             self.updateMouseLook(dt) # on modifie sa vision
+            self.barre.setScale(self.health/100, 1, 1)
 
             # logique pour l'attaque ( a modifier quand y'aura pls monstre )
             if self.keyMap["attaque"] and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
@@ -163,6 +184,11 @@ class Player():
                         self.is_attacking = True # on indique su'il est en train d'attaquer
                     self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
 
+            if self.keyMap["Sprint"]:
+                self.moveSpeed = self.initialSpeed*2
+            else:
+                self.moveSpeed = self.initialSpeed
+
             # logique pour savoir s'il est tjs en train d'attaquer
             if self.is_attacking:
                 if self.weapon.cooldown <= 0: # si plus de cooldown alors on peut reattaquer
@@ -171,7 +197,7 @@ class Player():
                 else:
                     self.weapon.cooldown -= dt # sinon, on enleve le temps qui c'est passé
         else:
-            print("Player is dead")  # Gérer la mort du joueur ici
+            self.died()
         
     def updateMovement(self, dt):
         """faire deplacer le joueur.
@@ -326,4 +352,16 @@ class Player():
                 target.changeHealth(self.weapon.degats)
             else:
                 target.changeHealth(2)
+
+    def died(self):
+        self.crosshairs.destroy()
+        self.fond.removeNode()
+        self.barre.removeNode()
+
+        self.message = OnscreenText(
+            text="Vous etes mort",
+            pos=(0, 0),
+            scale=0.2,
+            fg=(1, 0, 0, 1)
+        )
         
