@@ -95,7 +95,23 @@ class Menu(ShowBase):
         game = Game.MyGame(self)
 
     def credit(self):
-        return
+        self.supprimer_boutons()
+        self.message = OnscreenText(
+            text="Crédits:\nDéveloppeur: Thomas\nGraphismes: Thomas\nMusique: Thomas\n mention speciale a Monokirb qui corrige les erreurs ",
+            pos=(0, 0),
+            scale=0.05,
+            fg=(1, 1, 1, 1),
+            align=TextNode.ACenter
+        )
+        self.retour_bouton = DirectButton(
+            text="Retour",
+            scale=0.07,
+            pos=(-1.6,0, 0.9),
+            command=self.fermer_settings,
+            frameColor=(0.2, 0.4, 0.8, 1),
+            text_fg=(1, 1, 1, 1)
+        )
+
 
     def quitter(self):
         self.userExit()
