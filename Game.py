@@ -3,18 +3,21 @@ import Player
 import Monster
 import Terrain
 import Weapon
+import random
 
 #librairies
 from math import pi, sin, cos 
-import time
 
 #librairies panda3d
-from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile
 from panda3d.core import DirectionalLight, AmbientLight
 from panda3d.core  import CollisionTraverser, CollisionHandlerQueue
 from panda3d.core  import CollisionHandlerPusher, BitMask32
-from direct.gui.OnscreenImage import OnscreenImage
+from pandac.PandaModules import ClockObject
+FPS = 30
+globalClock = ClockObject.getGlobalClock()
+globalClock.setMode(ClockObject.MLimited)
+globalClock.setFrameRate(FPS)
 
 loadPrcFile('ressources/settings.prc') # charger les paramètres de configuration
 
@@ -50,12 +53,12 @@ class MyGame():
         self.setupLights() # appel methode setupLights
         
         self.terrain = Terrain.Terrain(self, self.block) # creation terrain
-        self.player = Player.Player(self, [0,0,0]) # creation player
+        self.player = Player.Player(self, [0,0,self.terrain.max_height]) # creation player
         self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 40, 4, 2.0) # creation arme
         self.monsters = []
 
-        for i in range(1,3):
-            self.monsters.append(Monster.Monster(self, [10*i,10,3], 100, 2, 10, 10, 50)) # creation monstre
+        for i in range(1,5):
+            self.monsters.append(Monster.Monster(self, [random.randint(-75,75),random.randint(-75,75),3], 100, 2, 10, 10, 50)) # creation monstre
         
         self.player.weapon = self.weapon # assigner les degats de l'arme au joueur
         
@@ -76,7 +79,7 @@ class MyGame():
         
         if hasattr(self, "cTrav"): # vérifier si cTrav est défini
             self.cTrav.traverse(render) 
-        if self.gametime > 10:
+        if self.gametime > 3:
             self.player.update(dt) #update le player
             for monster in self.monsters:
                 monster.update(dt) #update le monstre

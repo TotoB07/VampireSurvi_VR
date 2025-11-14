@@ -164,9 +164,13 @@ class Player():
         """
         
         if self.health > 0: # regarde si le joueur n'est pas mort
+            if self.keyMap["Sprint"]:
+                self.moveSpeed = self.initialSpeed*2
+            else:
+                self.moveSpeed = self.initialSpeed
+            
             self.updateMovement(dt) # on modifie sa position dans l'espace
             self.updateMouseLook(dt) # on modifie sa vision
-            self.barre.setScale(self.health/100, 1, 1)
 
             # logique pour l'attaque ( a modifier quand y'aura pls monstre )
             if self.keyMap["attaque"] and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
@@ -183,11 +187,6 @@ class Player():
                         self.attaque(monster) # on attaque
                         self.is_attacking = True # on indique su'il est en train d'attaquer
                     self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
-
-            if self.keyMap["Sprint"]:
-                self.moveSpeed = self.initialSpeed*2
-            else:
-                self.moveSpeed = self.initialSpeed
 
             # logique pour savoir s'il est tjs en train d'attaquer
             if self.is_attacking:

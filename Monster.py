@@ -37,7 +37,7 @@ class Monster:
         self.type = monster_type # type du monstre
         self.health = health # santé du monstre
         self.speed = speed # vitesse du monstre
-        self.attack_power = 50 # nombre de degats
+        self.attack_power = attack_power # nombre de degats
         self.attack_range = attack_range # range de l'attaque
         self.xp_value = xp_value # gain d'xp
 
@@ -188,6 +188,7 @@ class Monster:
         if self.game.player == target and not self.is_attacking: # si c le joueur
             target.health -= self.attack_power # on lui enleve de la vie 
             self.is_attacking = True # le monstre est en train d'attaquer
+            target.barre.setScale(target.health/100, 1, 1)
 
     def changeHealth(self, degats):
         """modifier la vie du monstre.

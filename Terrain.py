@@ -22,12 +22,12 @@ class Terrain():
         # Paramètres du terrain
         self.terrain_width = 75
         self.terrain_length = 75
-        self.max_height = 5
+        self.max_height = 10
         self.block_size = 2
         
         # Seed pour la génération aléatoire reproductible
         self.seed = random.randint(0, 10000)
-        self.noise = PerlinNoise(octaves=0.3, seed=self.seed)
+        self.noise = PerlinNoise(octaves=0.6, seed=self.seed)
         
         self.terrain_blocks = []  # Liste pour garder track des blocks
         self.generateTerrain()
@@ -47,30 +47,29 @@ class Terrain():
                 height = max(0, min(height, self.max_height))
                 
                 # Générer les blocs de la surface jusqu'à la bedrock
-                for z in range(height + 1):
-                    block_pos_x = x * self.block_size - (self.terrain_width * self.block_size / 2)
-                    block_pos_y = y * self.block_size - (self.terrain_length * self.block_size / 2)
-                    block_pos_z = (z * self.block_size) - self.max_height
-                    
-                    # Créer le noeud du bloc
-                    block_node = terrain_node.attachNewNode(f'block_{x}_{y}_{z}')
-                    block_node.setPos(block_pos_x, block_pos_y, block_pos_z)
-                    
-                    # Déterminer le type de bloc
-                    block_type = self.getBlockType(z, height)
-                    
-                    # Attacher le modèle du bloc
-                    self.blocks[block_type].instanceTo(block_node)
-                    
-                    # Ajouter la collision
-                    self.addBlockCollision(block_node)
-                    
-                    # Garder une référence
-                    self.terrain_blocks.append({
-                        'node': block_node,
-                        'pos': (x, y, z),
-                        'type': block_type
-                    })
+                block_pos_x = x * self.block_size - (self.terrain_width * self.block_size / 2)
+                block_pos_y = y * self.block_size - (self.terrain_length * self.block_size / 2)
+                block_pos_z = (height * self.block_size) - self.max_height
+                
+                # Créer le noeud du bloc
+                block_node = terrain_node.attachNewNode(f'block_{x}_{y}_{height}')
+                block_node.setPos(block_pos_x, block_pos_y, block_pos_z)
+                
+                # Déterminer le type de bloc
+                block_type = self.getBlockType(height, height)
+                
+                # Attacher le modèle du bloc
+                self.blocks[block_type].instanceTo(block_node)
+                
+                # Ajouter la collision
+                self.addBlockCollision(block_node)
+                
+                # Garder une référence
+                self.terrain_blocks.append({
+                    'node': block_node,
+                    'pos': (x, y, height),
+                    'type': block_type
+                })
 
     def getBlockType(self, z, surface_height):
         """Détermine le type de bloc selon sa profondeur."""
