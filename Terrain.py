@@ -65,7 +65,6 @@ class Terrain():
                     'pos': (x * self.block_size, y * self.block_size, height * self.block_size),
                     'type': block_type
                 })
-        print(self.terrain_blocks)
 
     def getBlockType(self, z, surface_height):
         """Détermine le type de bloc selon sa profondeur."""
@@ -92,8 +91,10 @@ class Terrain():
         self.terrain_blocks.clear()
 
     def getSurfaceLevel(self, x, y):
-
+        liste = []
         for elt in self.terrain_blocks:
             if elt['pos'][0] >= x and elt['pos'][0] < x + self.block_size and elt['pos'][1] >= y and elt['pos'][1] < y + self.block_size:
-                return elt['pos'][2]
+                liste.append(elt['pos'][2])
+        if liste != []:
+            return max(liste) 
         return 0

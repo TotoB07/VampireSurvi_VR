@@ -87,7 +87,8 @@ class Monster:
                 self.position[2] = terrain_level + self.game.terrain.block_size
             else:
                 self.position[2] += self.gravity * dt
-        if self.position[2] <= terrain_level + self.game.terrain.block_size:
+        #ajouter le fait de sauter un block de hauteur maximum
+        if self.position[2] <= terrain_level + self.game.terrain.block_size :
             self.position[2] = terrain_level + self.game.terrain.block_size
         self.monster.setZ(self.position[2])
         
@@ -182,28 +183,47 @@ class Monster:
         Returns:
             None
         """
-        if orientation == "devant": # s'il se deplace vers l'avant
+        print("1",self.game.terrain.getSurfaceLevel(self.position[0], self.position[1]+1))
+        print("2",self.game.terrain.getSurfaceLevel(self.position[0], self.position[1]-1))
+        print("3",self.game.terrain.getSurfaceLevel(self.position[0]+ 1, self.position[1]))
+        print("4",self.game.terrain.getSurfaceLevel(self.position[0]- 1, self.position[1]))
+        if orientation == "devant" and not self.isWallCollision(self.position[0], self.position[1]): # s'il se deplace vers l'avant
             self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH()))
             self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0], self.position[1] - 0.5 * self.game.terrain.block_size)
             print("devant")
-        elif orientation == "derrière": # s'il se deplace vers l'arriere
+        elif orientation == "derrière" and not self.isWallCollision(self.position[0], self.position[1] - self.game.terrain.block_size): # s'il se deplace vers l'arriere
             self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
             self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0] , self.position[1]- 0.5 * self.game.terrain.block_size)
             print("derrière")
-        elif orientation == "gauche": # s'il se deplace vers la gauche
+        elif orientation == "gauche" and not self.isWallCollision(self.position[0] - self.game.terrain.block_size, self.position[1]): # s'il se deplace vers la gauche
             self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
             self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
             print("gauche")
-        elif orientation == "droite": # s'il se deplace vers la droite
+        elif orientation == "droite" and not self.isWallCollision(self.position[0], self.position[1]): # s'il se deplace vers la droite
             self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
             self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
-
             print("droite")
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # modifier les positions du mosntre  
+
+    def isWallCollision(self, new_x, new_y):
+        """verifier si le monstre entre en collision avec un mur.
+        Args:
+            new_x (float): nouvelle position en x
+            new_y (float): nouvelle position en y
+        Returns:
+            (bool): True si collision, False sinon
+        """
+        # Logique de détection de collision avec les murs
+        # Retourne True si une collision est détectée, sinon False
+        if self.game.terrain.getSurfaceLevel(new_x, new_y) > self.position[2] + self.game.terrain.block_size:
+            print("collision")
+            return True
+        return False
+    
 
     def attack(self, target):
         """attaque du monstre.

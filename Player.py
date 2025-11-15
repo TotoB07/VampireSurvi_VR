@@ -262,8 +262,6 @@ class Player():
                 newZ = surfaceZ + 2.0 # remetre la position Z du joueur a 0
             else: # on n'est pas sur le sol
                 self.onGround = False
-        print("player",self.screen.camera.getX(), self.screen.camera.getY(), newZ)
-        print(self.game.terrain.getSurfaceLevel(self.screen.camera.getX(), self.screen.camera.getY()))
 
         self.screen.camera.setZ(newZ) #changer la position Z de la camera
         self.position[2] = newZ #axe Z
