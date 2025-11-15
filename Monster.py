@@ -46,6 +46,7 @@ class Monster:
         self.is_attacking = False # etat de son attaque
         self.initialTimeToReload = 3 # temps initial pour que le monstre reattaque
         self.timeToReload = self.initialTimeToReload # temps avant que le monstre reattaque
+        self.gravity = -20  # accélération due à la gravité
         
 
         self.loadMonster() # chargement du monstre
@@ -72,6 +73,24 @@ class Monster:
                 self.is_attacking = False
         else:
             self.unloadMonster() # supprimer le monstre
+
+    def gravityEffect(self, dt, x, y):
+        """appliquer la gravité au monstre.
+        Args:
+            dt (float): temps qui c passer depuis la derniere update
+        Returns:
+            None
+        """
+        terrain_level = self.game.terrain.getSurfaceLevel(x ,y) # obtenir le niveau du terrain aux coordonnées (x, y)
+        if self.position[2] > terrain_level + self.game.terrain.block_size:
+            if self.position[2] + self.gravity * dt < terrain_level + self.game.terrain.block_size:
+                self.position[2] = terrain_level + self.game.terrain.block_size
+            else:
+                self.position[2] += self.gravity * dt
+        if self.position[2] <= terrain_level + self.game.terrain.block_size:
+            self.position[2] = terrain_level + self.game.terrain.block_size
+        self.monster.setZ(self.position[2])
+        
             
     def isDead(self):
         """verifier si le monstre est mort.
@@ -89,7 +108,7 @@ class Monster:
         Returns:
             None
         """
-        self.monster = loader.loadModel('model3d/grass-block.glb') # chargement model du monstre
+        self.monster = loader.loadModel('model3d/stone-block.glb') # chargement model du monstre
         self.monster.reparentTo(self.screen.render)  # Attacher au render
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # placer le monstre au position
         
@@ -166,16 +185,24 @@ class Monster:
         if orientation == "devant": # s'il se deplace vers l'avant
             self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH()))
             self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
+            self.gravityEffect(dt, self.position[0], self.position[1] - 0.5 * self.game.terrain.block_size)
+            print("devant")
         elif orientation == "derrière": # s'il se deplace vers l'arriere
             self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
             self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
+            self.gravityEffect(dt, self.position[0] , self.position[1]- 0.5 * self.game.terrain.block_size)
+            print("derrière")
         elif orientation == "gauche": # s'il se deplace vers la gauche
             self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
             self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
+            self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
+            print("gauche")
         elif orientation == "droite": # s'il se deplace vers la droite
             self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
             self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
+            self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
 
+            print("droite")
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # modifier les positions du mosntre  
 
     def attack(self, target):

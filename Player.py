@@ -41,7 +41,7 @@ class Player():
         
         # Physique
         self.zVel = 0.0 # vitesse verticale du joueur
-        self.gravity = -20.0 # gravité du jeu
+        self.gravity = -9.81 # gravité du jeu
         self.jumpSpeed = 10.0 # vitesse du joueur sur le plan vertical
         self.onGround = False # savoir si le joueur est dans les airs
         self.moveSpeed = 10 #v itesse du joueur sur le plan horizontal
@@ -162,7 +162,6 @@ class Player():
         Returns:
             None
         """
-        
         if self.health > 0: # regarde si le joueur n'est pas mort
             if self.keyMap["Sprint"]:
                 self.moveSpeed = self.initialSpeed*2
@@ -263,6 +262,8 @@ class Player():
                 newZ = surfaceZ + 2.0 # remetre la position Z du joueur a 0
             else: # on n'est pas sur le sol
                 self.onGround = False
+        print("player",self.screen.camera.getX(), self.screen.camera.getY(), newZ)
+        print(self.game.terrain.getSurfaceLevel(self.screen.camera.getX(), self.screen.camera.getY()))
 
         self.screen.camera.setZ(newZ) #changer la position Z de la camera
         self.position[2] = newZ #axe Z

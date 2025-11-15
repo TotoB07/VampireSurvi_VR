@@ -46,14 +46,9 @@ class Terrain():
                 height = int((noise_value + 1) / 2 * self.max_height)
                 height = max(0, min(height, self.max_height))
                 
-                # Générer les blocs de la surface jusqu'à la bedrock
-                block_pos_x = x * self.block_size - (self.terrain_width * self.block_size / 2)
-                block_pos_y = y * self.block_size - (self.terrain_length * self.block_size / 2)
-                block_pos_z = (height * self.block_size) - self.max_height
-                
                 # Créer le noeud du bloc
                 block_node = terrain_node.attachNewNode(f'block_{x}_{y}_{height}')
-                block_node.setPos(block_pos_x, block_pos_y, block_pos_z)
+                block_node.setPos(x * self.block_size, y * self.block_size, height * self.block_size)
                 
                 # Déterminer le type de bloc
                 block_type = self.getBlockType(height, height)
@@ -67,9 +62,10 @@ class Terrain():
                 # Garder une référence
                 self.terrain_blocks.append({
                     'node': block_node,
-                    'pos': (x, y, height),
+                    'pos': (x * self.block_size, y * self.block_size, height * self.block_size),
                     'type': block_type
                 })
+        print(self.terrain_blocks)
 
     def getBlockType(self, z, surface_height):
         """Détermine le type de bloc selon sa profondeur."""
@@ -94,3 +90,10 @@ class Terrain():
         for block in self.terrain_blocks:
             block['node'].removeNode()
         self.terrain_blocks.clear()
+
+    def getSurfaceLevel(self, x, y):
+
+        for elt in self.terrain_blocks:
+            if elt['pos'][0] >= x and elt['pos'][0] < x + self.block_size and elt['pos'][1] >= y and elt['pos'][1] < y + self.block_size:
+                return elt['pos'][2]
+        return 0

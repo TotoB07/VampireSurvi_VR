@@ -53,12 +53,12 @@ class MyGame():
         self.setupLights() # appel methode setupLights
         
         self.terrain = Terrain.Terrain(self, self.block) # creation terrain
-        self.player = Player.Player(self, [0,0,self.terrain.max_height]) # creation player
+        self.player = Player.Player(self, [30,30,self.terrain.max_height * self.terrain.block_size]) # creation player
         self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 40, 4, 2.0) # creation arme
         self.monsters = []
 
         for i in range(1,5):
-            self.monsters.append(Monster.Monster(self, [random.randint(-75,75),random.randint(-75,75),3], 100, 2, 10, 10, 50)) # creation monstre
+            self.monsters.append(Monster.Monster(self, [30,30,100], 100, 2, 10, 10, 50)) # creation monstre
         
         self.player.weapon = self.weapon # assigner les degats de l'arme au joueur
         
