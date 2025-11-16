@@ -46,6 +46,8 @@ class Player():
         self.gravity = -20 # gravité du jeu
         self.jumpSpeed = 10.0 # vitesse du joueur sur le plan vertical
         self.onGround = False # savoir si le joueur est dans les airs
+        self.IsCrouched = False
+        self.height_player = 3.0 # hauteur du joueur
         self.moveSpeed = 10 #v itesse du joueur sur le plan horizontal
         self.initialSpeed = 10
         
@@ -193,10 +195,7 @@ class Player():
         # Mouvement horizontal
         x_movement = 0 # en x
         y_movement = 0 # en y
-        if self.input.isSet("sprint"):
-            self.moveSpeed = self.initialSpeed*2
-        else:
-            self.moveSpeed = self.initialSpeed
+        
         if self.input.isSet("forward"): # s'il se deplace vers l'avant
             x_movement -= dt * self.moveSpeed * sin(degToRad(self.screen.camera.getH()))
             y_movement += dt * self.moveSpeed * cos(degToRad(self.screen.camera.getH()))
@@ -214,17 +213,23 @@ class Player():
         if self.input.isSet('enter'):
             self.captureMouse()
 
+        if self.input.isSet("sprint") and not self.input.isSet("crouch"):
+            self.moveSpeed = self.initialSpeed*2
+        else:
+            self.moveSpeed = self.initialSpeed
         # Saut et traversée
-        if self.input.isSet('jump') and self.onGround:
+        if self.input.isSet('jump') and self.onGround and not self.input.isSet("crouch"):
             self.zVel = self.jumpSpeed # ajout de la velocité vers le haut
             self.onGround = False # il n'est plus sur le sol
             
-        if self.input.isSet('crouch'):
-            if hasattr(self, "playerCollider"): # regarder s"il n'y a pas des collision qui nous empêche de descendre
-                self.playerCollider.node().setFromCollideMask(BitMask32.allOff()) #descandre
-        else:
-            if hasattr(self, "playerCollider"): # on regarde si on ne tombe pas
-                self.playerCollider.node().setFromCollideMask(self.game.worldMask)
+        if self.input.isSet('crouch') and not self.IsCrouched:
+            self.height_player = 1.5 #crouch
+            self.screen.camera.setZ(self.screen.camera.getZ() - 1.5)
+            self.IsCrouched = True
+        elif not self.input.isSet('crouch') and self.IsCrouched:
+            self.height_player = 3.0
+            self.screen.camera.setZ(self.screen.camera.getZ() + 1.5) #uncrouch
+            self.IsCrouched = False
 
         # Application mouvement
         # sur la camera
@@ -249,10 +254,10 @@ class Player():
             entry = self.floorQueue.getEntry(0) # prendre la premiere collision (la plus proche)
             surfaceZ = entry.getSurfacePoint(self.screen.render).getZ() #recuperer la hauteur du sol en dessous du joueur
             dist = self.screen.camera.getZ() - surfaceZ #distance entre la camera et le sol
-            if dist <= 2 and self.zVel <= 0: # on est sur le sol
+            if dist <= self.height_player and self.zVel <= 0: # on est sur le sol
                 self.onGround = True # le joueur est sur le sol
                 self.zVel = 0.0 # remetre notre velocité d'axe Z a 0
-                newZ = surfaceZ + 2.0 # remetre la position Z du joueur a 0
+                newZ = surfaceZ + self.height_player # remetre la position Z du joueur a 0
             else: # on n'est pas sur le sol
                 self.onGround = False
 
