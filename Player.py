@@ -4,6 +4,7 @@ from math import pi, sin, cos
 #librairies panda3d
 from panda3d.core import CollisionNode, CollisionSphere, CollisionRay, BitMask32
 from panda3d.core import TransparencyAttrib, WindowProperties, CardMaker
+from direct.controls.InputState import InputState
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 
@@ -31,6 +32,7 @@ class Player():
         
         self.game = game  # référence vers la classe principale
         self.screen = game.screen
+        self.input = InputState() # gestion des entrées utilisateur
 
         # Infos joueur
         self.health = 100 # santé actuelle du joueur
@@ -41,7 +43,7 @@ class Player():
         
         # Physique
         self.zVel = 0.0 # vitesse verticale du joueur
-        self.gravity = -9.81 # gravité du jeu
+        self.gravity = -20 # gravité du jeu
         self.jumpSpeed = 10.0 # vitesse du joueur sur le plan vertical
         self.onGround = False # savoir si le joueur est dans les airs
         self.moveSpeed = 10 #v itesse du joueur sur le plan horizontal
@@ -50,9 +52,10 @@ class Player():
         # Contrôles
         self.setupControls() # configuration des contrôles
         self.setupCamera(self.position) # configuration de la caméra
+        self.captureMouse()
         
         # État de la souris
-        self.cameraSwingActivated = False # savoir si la sourie est dans le jeu ou non
+        self.cameraSwingActivated = True # savoir si la sourie est dans le jeu ou non
         self.cameraSwingFactor = 10 # facteur de la sourie
 
         #Barre de vie
@@ -77,36 +80,24 @@ class Player():
             None
         """
 
-        # dictionnaire pour savoir dans quels direction le joueur se deplace
-        self.keyMap = {
-            "forward": False, # devant
-            "backward": False, # derriere
-            "left": False, # à gauche
-            "right": False, # à droite
-            "up": False, # au dessus 
-            "down": False, # en dessous
-            "attaque": False, # attaque du joueur
-            "Sprint": False
-        }
-        
-        # Binding des touches
-        self.screen.accept(self.game.menu.bindings["Sortir"], self.releaseMouse) # touche pour desactiver la sourie 
-        self.screen.accept(self.game.menu.bindings["mouse1"], self.captureMouse) # touche pour activer la sourie 
-        self.screen.accept(self.game.menu.bindings["Attaque"], self.updateKeyMap, ["attaque", True]) # touche pour attaquer
-        self.screen.accept(self.game.menu.bindings["Avancer"], self.updateKeyMap, ["forward", True]) # touche pour avancer
-        self.screen.accept(self.game.menu.bindings["Avancer"] + "-up", self.updateKeyMap, ["forward", False]) # touche pour arreter d'avancer
-        self.screen.accept(self.game.menu.bindings["Reculer"], self.updateKeyMap, ["backward", True]) # touche pour reculer
-        self.screen.accept(self.game.menu.bindings["Reculer"] + "-up", self.updateKeyMap, ["backward", False]) # touche pour arreter de reculer
-        self.screen.accept(self.game.menu.bindings["Gauche"], self.updateKeyMap, ["left", True]) # touche pour aller à gauche
-        self.screen.accept(self.game.menu.bindings["Gauche"] + "-up", self.updateKeyMap, ["left", False]) # touche pour arreter d'aller à gauche
-        self.screen.accept(self.game.menu.bindings["Droite"], self.updateKeyMap, ["right", True]) # touche pour aller à droite
-        self.screen.accept(self.game.menu.bindings["Droite"] + "-up", self.updateKeyMap, ["right", False]) # touche pour arreter d'aller à droite
-        self.screen.accept(self.game.menu.bindings["Saut"], self.updateKeyMap, ["up", True]) # touche pour sauter
-        self.screen.accept(self.game.menu.bindings["Saut"] + "-up", self.updateKeyMap, ["up", False]) # touche pour arreter de sauter
-        self.screen.accept(self.game.menu.bindings["Accroupir"], self.updateKeyMap, ["down", True]) # touche pour se baisser
-        self.screen.accept(self.game.menu.bindings["Accroupir"]+ "-up", self.updateKeyMap, ["down", False]) # touche pour arreter de se baisser
-        self.screen.accept(self.game.menu.bindings["Sprint"], self.updateKeyMap, ["Sprint", True]) # touche pour se baisser
-        self.screen.accept(self.game.menu.bindings["Sprint"]+ "-up", self.updateKeyMap, ["Sprint", False]) # touche pour arreter de se baisser
+        # mouvement
+        self.input.watchWithModifiers("forward",  "z")
+        self.input.watchWithModifiers("backward", "s")
+        self.input.watchWithModifiers("left",     "q")
+        self.input.watchWithModifiers("right",    "d")
+        # saut
+        self.input.watchWithModifiers("jump", "space")
+        # sprint
+        self.input.watchWithModifiers("sprint", "shift")
+        # accroupi
+        self.input.watchWithModifiers("crouch", "control")
+        # attaque
+        self.input.watchWithModifiers("attack", "mouse1")
+        #sortir de la fenetre
+        self.input.watchWithModifiers("exit", "escape")
+        #entrer dans la fenetre
+        self.input.watchWithModifiers("enter", "mouse3")
+
 
     def setupCamera(self, position):
         """Initialisation de la camera du joueur.
@@ -163,16 +154,11 @@ class Player():
             None
         """
         if self.health > 0: # regarde si le joueur n'est pas mort
-            if self.keyMap["Sprint"]:
-                self.moveSpeed = self.initialSpeed*2
-            else:
-                self.moveSpeed = self.initialSpeed
-            
             self.updateMovement(dt) # on modifie sa position dans l'espace
             self.updateMouseLook(dt) # on modifie sa vision
 
             # logique pour l'attaque ( a modifier quand y'aura pls monstre )
-            if self.keyMap["attaque"] and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
+            if self.input.isSet("attaque") and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
                 for monster in self.game.monsters:
                     distance = monster.getDistanceToPlayer() # on regarde la distance
                     # on regarde si le joueur est a la bonne distance
@@ -185,7 +171,7 @@ class Player():
                     if Is_attack_range:
                         self.attaque(monster) # on attaque
                         self.is_attacking = True # on indique su'il est en train d'attaquer
-                    self.keyMap["attaque"] = False # On remet a 0 la touche pour pas attaquer
+                    self.input.set("attaque", False) # On remet a 0 la touche pour pas attaquer
 
             # logique pour savoir s'il est tjs en train d'attaquer
             if self.is_attacking:
@@ -207,26 +193,33 @@ class Player():
         # Mouvement horizontal
         x_movement = 0 # en x
         y_movement = 0 # en y
-
-        if self.keyMap['forward']: # s'il se deplace vers l'avant
+        if self.input.isSet("sprint"):
+            self.moveSpeed = self.initialSpeed*2
+        else:
+            self.moveSpeed = self.initialSpeed
+        if self.input.isSet("forward"): # s'il se deplace vers l'avant
             x_movement -= dt * self.moveSpeed * sin(degToRad(self.screen.camera.getH()))
             y_movement += dt * self.moveSpeed * cos(degToRad(self.screen.camera.getH()))
-        if self.keyMap['backward']: # s'il se deplace vers l'arriere
+        if self.input.isSet('backward'): # s'il se deplace vers l'arriere
             x_movement += dt * self.moveSpeed * sin(degToRad(self.screen.camera.getH()))
             y_movement -= dt * self.moveSpeed * cos(degToRad(self.screen.camera.getH()))
-        if self.keyMap['left']: # s'il se deplace vers la gauche
+        if self.input.isSet('left'): # s'il se deplace vers la gauche
             x_movement -= dt * self.moveSpeed * cos(degToRad(self.screen.camera.getH()))
             y_movement -= dt * self.moveSpeed * sin(degToRad(self.screen.camera.getH()))
-        if self.keyMap['right']: # s'il se deplace vers la droite
+        if self.input.isSet('right'): # s'il se deplace vers la droite
             x_movement += dt * self.moveSpeed * cos(degToRad(self.screen.camera.getH()))
             y_movement += dt * self.moveSpeed * sin(degToRad(self.screen.camera.getH()))
+        if self.input.isSet('exit'):
+            self.releaseMouse()
+        if self.input.isSet('enter'):
+            self.captureMouse()
 
         # Saut et traversée
-        if self.keyMap['up'] and self.onGround:
+        if self.input.isSet('jump') and self.onGround:
             self.zVel = self.jumpSpeed # ajout de la velocité vers le haut
             self.onGround = False # il n'est plus sur le sol
             
-        if self.keyMap['down']:
+        if self.input.isSet('crouch'):
             if hasattr(self, "playerCollider"): # regarder s"il n'y a pas des collision qui nous empêche de descendre
                 self.playerCollider.node().setFromCollideMask(BitMask32.allOff()) #descandre
         else:
@@ -273,41 +266,37 @@ class Player():
         Returns:
             None
         """
-        if self.cameraSwingActivated: 
-            if not self.screen.win.getProperties().getForeground(): # verifier si la fenetre est en arriere plan
-                self.releaseMouse() #liberation de la sourie
-            else:
-                wp = self.screen.win.getProperties() # obtenir les propriétés de la fenêtre
-                cx = int(wp.getXSize() / 2) # calculer le centre X
-                cy = int(wp.getYSize() / 2) # calculer le centre Y
+        if not self.cameraSwingActivated:
+            print("eee")
+            return
+        # Si la souris est disponible
+        # récupérer le mouvement relatif de la souris
+        md = self.screen.win.getPointer(0)
 
-                md = self.screen.win.getPointer(0) # obtenir la position actuelle de la souris
-                mouseX = md.getX() # obtenir la coordonnée X de la souris
-                mouseY = md.getY() # obtenir la coordonnée Y de la souris
+        mouseX = md.getX()
+        mouseY = md.getY()
 
-                mouseChangeX = mouseX - cx # calculer le changement en X
-                mouseChangeY = mouseY - cy # calculer le changement en Y
+        # centre de l'écran
+        wp = self.screen.win.getProperties()
+        cx = int(wp.getXSize() / 2)
+        cy = int(wp.getYSize() / 2)
 
-                currentH = self.screen.camera.getH() # obtenir l'angle de lacamera en H
-                currentP = self.screen.camera.getP() # obtenir l'angle de la camera en P
+        # delta mouvements
+        deltaX = mouseX - cx
+        deltaY = mouseY - cy
 
-                self.screen.camera.setHpr(
-                    currentH - mouseChangeX * dt * self.cameraSwingFactor,
-                    min(90, max(-90, currentP - mouseChangeY * dt * self.cameraSwingFactor)),
-                    0
-                ) # mettre a jour l'angle de la camera
-                
-                self.screen.win.movePointer(0, cx, cy) # repositionner la souris au centre
+        # appliquer rotation caméra
+        sens = self.cameraSwingFactor * dt
+        h = self.screen.camera.getH() - deltaX * sens
+        p = self.screen.camera.getP() - deltaY * sens
 
-    def updateKeyMap(self, key, value):
-        """charger les touches que le joueur utilise.
-        Args:
-            key (str): nom de l'action
-            value (bool): valeur de la key
-        Returns:
-            None
-        """
-        self.keyMap[key] = value # mettre a jour l'état de la touche
+        # clamp vertical
+        p = max(-85, min(85, p))
+
+        self.screen.camera.setHpr(h, p, 0)
+
+        # remettre souris au centre
+        self.screen.win.movePointer(0, cx, cy)
 
     def captureMouse(self):
         """activer les mouvements de la camera.

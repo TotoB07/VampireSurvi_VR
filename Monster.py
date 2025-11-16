@@ -183,30 +183,22 @@ class Monster:
         Returns:
             None
         """
-        print("1",self.game.terrain.getSurfaceLevel(self.position[0], self.position[1]+1))
-        print("2",self.game.terrain.getSurfaceLevel(self.position[0], self.position[1]-1))
-        print("3",self.game.terrain.getSurfaceLevel(self.position[0]+ 1, self.position[1]))
-        print("4",self.game.terrain.getSurfaceLevel(self.position[0]- 1, self.position[1]))
         if orientation == "devant" and not self.isWallCollision(self.position[0], self.position[1]): # s'il se deplace vers l'avant
             self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH()))
             self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0], self.position[1] - 0.5 * self.game.terrain.block_size)
-            print("devant")
         elif orientation == "derrière" and not self.isWallCollision(self.position[0], self.position[1] - self.game.terrain.block_size): # s'il se deplace vers l'arriere
             self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
             self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0] , self.position[1]- 0.5 * self.game.terrain.block_size)
-            print("derrière")
         elif orientation == "gauche" and not self.isWallCollision(self.position[0] - self.game.terrain.block_size, self.position[1]): # s'il se deplace vers la gauche
             self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
             self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
-            print("gauche")
         elif orientation == "droite" and not self.isWallCollision(self.position[0], self.position[1]): # s'il se deplace vers la droite
             self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
             self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
             self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
-            print("droite")
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # modifier les positions du mosntre  
 
     def isWallCollision(self, new_x, new_y):
