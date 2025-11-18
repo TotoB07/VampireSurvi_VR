@@ -31,7 +31,7 @@ class Monster:
         Returns:
             None
         """
-        self.screen = game.screen
+        self.screen = game.screen # référence vers l'écran de jeu
         self.game = game  # référence vers la partie
         self.position = position # position du monstre
         self.type = monster_type # type du monstre
@@ -66,11 +66,11 @@ class Monster:
         self.is_alive = not self.isDead() # on regarde s'il est toujours en vie
         if self.is_alive: 
             self.nextAction(dt) # effectuer la prochaine action
-            if self.is_attacking:
-                self.timeToReload -= dt
-            if self.timeToReload <= 0:
-                self.timeToReload = self.initialTimeToReload
-                self.is_attacking = False
+            if self.is_attacking: 
+                self.timeToReload -= dt # diminuer le temps avant la prochaine attaque
+            if self.timeToReload <= 0: 
+                self.timeToReload = self.initialTimeToReload # reinitialiser le temps avant la prochaine attaque
+                self.is_attacking = False # le monstre n'attaque plus
         else:
             self.unloadMonster() # supprimer le monstre
 
@@ -82,15 +82,15 @@ class Monster:
             None
         """
         terrain_level = self.game.terrain.getSurfaceLevel(x ,y) # obtenir le niveau du terrain aux coordonnées (x, y)
-        if self.position[2] > terrain_level + self.game.terrain.block_size:
-            if self.position[2] + self.gravity * dt < terrain_level + self.game.terrain.block_size:
-                self.position[2] = terrain_level + self.game.terrain.block_size
+        if self.position[2] > terrain_level + self.game.terrain.block_size: # si le monstre est au-dessus du sol
+            if self.position[2] + self.gravity * dt < terrain_level + self.game.terrain.block_size: # si le monstre va toucher le sol
+                self.position[2] = terrain_level + self.game.terrain.block_size # placer le monstre au niveau du sol
             else:
-                self.position[2] += self.gravity * dt
+                self.position[2] += self.gravity * dt # appliquer la gravité
         #ajouter le fait de sauter un block de hauteur maximum
-        if self.position[2] <= terrain_level + self.game.terrain.block_size :
-            self.position[2] = terrain_level + self.game.terrain.block_size
-        self.monster.setZ(self.position[2])
+        if self.position[2] <= terrain_level + self.game.terrain.block_size: # si le monstre est au niveau du sol
+            self.position[2] = terrain_level + self.game.terrain.block_size # placer le monstre au niveau du sol
+        self.monster.setZ(self.position[2]) # mettre à jour la position en Z du monstre
         
             
     def isDead(self):
@@ -142,7 +142,7 @@ class Monster:
         
         for elt in distance:
             if abs(elt) > self.attack_range//10: # savoir si le joueur est trop loin
-                good_distance = False
+                good_distance = False 
         
         if good_distance: 
             self.attack(self.game.player) # le monstre attaque s'il est dans la range
@@ -183,23 +183,46 @@ class Monster:
         Returns:
             None
         """
-        if orientation == "devant" and not self.isWallCollision(self.position[0], self.position[1]): # s'il se deplace vers l'avant
-            self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH()))
-            self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
-            self.gravityEffect(dt, self.position[0], self.position[1] - 0.5 * self.game.terrain.block_size)
-        elif orientation == "derrière" and not self.isWallCollision(self.position[0], self.position[1] - self.game.terrain.block_size): # s'il se deplace vers l'arriere
-            self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
-            self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
-            self.gravityEffect(dt, self.position[0] , self.position[1]- 0.5 * self.game.terrain.block_size)
-        elif orientation == "gauche" and not self.isWallCollision(self.position[0] - self.game.terrain.block_size, self.position[1]): # s'il se deplace vers la gauche
-            self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
-            self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
-            self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
-        elif orientation == "droite" and not self.isWallCollision(self.position[0], self.position[1]): # s'il se deplace vers la droite
-            self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
-            self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
-            self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
+        if orientation == "devant": # s'il se deplace vers l'avant
+            if not self.isWallCollision(self.position[0], self.position[1]): # verifier s'il y a une collision avec un mur
+                self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH())) 
+                self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
+                self.gravityEffect(dt, self.position[0], self.position[1] - 0.5 * self.game.terrain.block_size)
+            else:
+                self.bypassWallCollision() #contourne le mur s'il y a une collision
+        elif orientation == "derrière": # s'il se deplace vers l'arriere
+            if not self.isWallCollision(self.position[0], self.position[1] - self.game.terrain.block_size): # verifier s'il y a une collision avec un mur
+                self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
+                self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
+                self.gravityEffect(dt, self.position[0] , self.position[1]- 0.5 * self.game.terrain.block_size)
+            else:
+                self.bypassWallCollision() #contourne le mur s'il y a une collision
+        elif orientation == "gauche": # s'il se deplace vers la gauche
+            if not self.isWallCollision(self.position[0] - self.game.terrain.block_size, self.position[1]): # verifier s'il y a une collision avec un mur
+                self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
+                self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
+                self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
+            else:
+                self.bypassWallCollision() #contourne le mur s'il y a une collision
+        elif orientation == "droite": # s'il se deplace vers la droite
+            if not self.isWallCollision(self.position[0], self.position[1]): # verifier s'il y a une collision avec un mur
+                self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
+                self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
+                self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
+            else:
+                self.bypassWallCollision() #contourne le mur s'il y a une collision
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # modifier les positions du mosntre  
+
+    def bypassWallCollision(self):
+        """contourner la collision avec un mur.
+        Args:
+            None
+        Returns:
+            None
+        """
+        # Logique pour contourner la collision avec les murs
+        pass
+
 
     def isWallCollision(self, new_x, new_y):
         """verifier si le monstre entre en collision avec un mur.
@@ -209,10 +232,7 @@ class Monster:
         Returns:
             (bool): True si collision, False sinon
         """
-        # Logique de détection de collision avec les murs
-        # Retourne True si une collision est détectée, sinon False
         if self.game.terrain.getSurfaceLevel(new_x, new_y) > self.position[2] + self.game.terrain.block_size:
-            print("collision")
             return True
         return False
     

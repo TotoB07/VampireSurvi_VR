@@ -9,10 +9,10 @@ loadPrcFileData("", "win-size 1280 720")
 class Menu(ShowBase):
     def __init__(self):
         ShowBase.__init__(self) # initialisation classe parent
-        self.create_menu()
+        self.create_menu() # appel methode create_menu
 
-        self.bindings = {
-            "Sortir": "escape",
+        self.bindings = { # dictionnaire des touches de contrôle
+            "Sortir": "escape", 
             "Avancer": "z",
             "Reculer": "s",
             "Gauche": "q",
@@ -26,7 +26,14 @@ class Menu(ShowBase):
         
     
     def create_menu(self):
-        self.setBackgroundColor(Vec4(0, 0, 0, 1))
+        """ Crée le menu principal.
+        Args:
+            None
+        Returns:
+            None
+        """
+        #Nom du jeu
+        self.setBackgroundColor(Vec4(0, 0, 0, 1)) 
         self.message = OnscreenText(
             text="Nom du jeu",
             pos=(0, 0.35),
@@ -35,6 +42,7 @@ class Menu(ShowBase):
             align=TextNode.ACenter
         )
 
+        #bouton jouer
         self.bouton_jouer = DirectButton(
             text="Jouer",
             scale=0.1,
@@ -42,6 +50,7 @@ class Menu(ShowBase):
             command=self.lancer_partie
         )
 
+        #bouton credits
         self.bouton_credit = DirectButton(
             text="Crédits",
             scale=0.1,
@@ -49,6 +58,7 @@ class Menu(ShowBase):
             command=self.credit
         )
 
+        #bouton quitter
         self.bouton_quitter = DirectButton(
             text="Quitter",
             scale=0.1,
@@ -58,6 +68,7 @@ class Menu(ShowBase):
             text_fg=(1, 1, 1, 1)  
         )
 
+        #bouton settings
         self.bouton_settings = DirectButton(
             text="settings",
             scale=0.07,
@@ -68,8 +79,14 @@ class Menu(ShowBase):
         )
 
     def supprimer_boutons(self):
+        """ Supprime les boutons du menu.
+        Args:
+            None
+        Returns:
+            None
+        """
         self.message.destroy()
-        if hasattr(self, 'bouton_jouer'):
+        if hasattr(self, 'bouton_jouer'): 
             self.bouton_jouer.destroy()
         if hasattr(self, 'bouton_credit'):
             self.bouton_credit.destroy()
@@ -92,11 +109,15 @@ class Menu(ShowBase):
         
 
     def lancer_partie(self):
+        """ Lance la partie."""
         self.supprimer_boutons()
         game = Game.MyGame(self)
 
     def credit(self):
+        """ Affiche les crédits."""
         self.supprimer_boutons()
+
+        #affichage credits
         self.message = OnscreenText(
             text="Crédits:\nDéveloppeur: Thomas\nGraphismes: Thomas\nMusique: Thomas\n mention speciale a Monokirb qui corrige les erreurs ",
             pos=(0, 0),
@@ -104,6 +125,7 @@ class Menu(ShowBase):
             fg=(1, 1, 1, 1),
             align=TextNode.ACenter
         )
+        #bouton retour
         self.retour_bouton = DirectButton(
             text="Retour",
             scale=0.07,
@@ -115,11 +137,14 @@ class Menu(ShowBase):
 
 
     def quitter(self):
+        """ Quitte le jeu."""
         self.userExit()
 
     def ouvrir_settings(self):
+        """ Ouvre le menu des paramètres."""
         self.supprimer_boutons()
 
+        #bouton retour
         self.retour_bouton = DirectButton(
             text="Retour",
             scale=0.07,
@@ -129,6 +154,7 @@ class Menu(ShowBase):
             text_fg=(1, 1, 1, 1)
         )
 
+        #option resolution
         self.message = OnscreenText(
             text="Resolution :",
             pos=(-1.55, 0.35),
@@ -137,6 +163,7 @@ class Menu(ShowBase):
             align=TextNode.ACenter
         )
 
+        #option resolution
         self.option_resolution = DirectOptionMenu(
             text="Résolution",
             scale=0.08,
@@ -146,10 +173,11 @@ class Menu(ShowBase):
             command=self.changer_resolution
         )
 
-        #modifier les touches 
-        self.message_touch = []
-        self.bouton_touche = []
+        #modification des touches 
+        self.message_touch = [] 
+        self.bouton_touche = [] 
         for elt in self.bindings:
+            # ajout des messages pour chaque action
             message = OnscreenText(
                 text=f"{elt} : {self.bindings[elt]}",
                 pos=(-1.73, 0.2 - list(self.bindings.keys()).index(elt) * 0.1),
@@ -157,6 +185,7 @@ class Menu(ShowBase):
                 fg=(1, 1, 1, 1),
                 align=TextNode.ALeft
             )
+            # ajout des  boutons pour chaque action
             self.message_touch.append(message)
             bouton = DirectButton(
                 text="Changer",
@@ -168,18 +197,21 @@ class Menu(ShowBase):
             self.bouton_touche.append(bouton)
 
     def fermer_settings(self):
+        """ Ferme le menu des paramètres."""
         self.supprimer_boutons()
         self.create_menu()
 
             
     def changer_touche(self, action):
+        """ Change la touche associée à une action."""
         def on_key_pressed(key):
-            self.bindings[action] = key
-            self.supprimer_boutons()
-            self.ouvrir_settings()
+            """ Gère l'événement de touche pressée.""" 
+            self.bindings[action] = key 
+            self.supprimer_boutons() 
+            self.ouvrir_settings() 
 
         # Liste des touches à écouter
-        all_keys = [
+        all_keys = [ #liste des touches
             "a","b","c","d","e","f","g","h","i","j","k","l","m","n",
             "o","p","q","r","s","t","u","v","w","x","y","z",
             "space","escape","lshift","control","alt","arrow_up",
@@ -193,6 +225,7 @@ class Menu(ShowBase):
 
 
     def changer_resolution(self, choix):
+        """ Change la résolution de la fenêtre."""
         largeur, hauteur = map(int, choix.split('x'))
 
         # Créer un nouvel objet WindowProperties

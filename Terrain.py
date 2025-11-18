@@ -15,9 +15,9 @@ class Terrain():
         Returns:
             None
         """
-        self.game = game
-        self.blocks = blocks
-        self.screen = game.screen
+        self.game = game # reference vers la classe principale
+        self.blocks = blocks # dictionnaire avec les blocks du jeu
+        self.screen = game.screen # reference vers l'écran du jeu
         
         # Paramètres du terrain
         self.terrain_width = 75
@@ -33,7 +33,12 @@ class Terrain():
         self.generateTerrain()
 
     def generateTerrain(self):
-        """Génère le terrain avec hauteurs aléatoires (bruit Perlin)."""
+        """Génère le terrain avec hauteurs aléatoires (bruit Perlin).
+        Args:
+            None
+        Returns:
+            None
+        """
         # Créer un dossier pour le terrain
         terrain_node = self.screen.render.attachNewNode('terrain')
         
@@ -50,11 +55,8 @@ class Terrain():
                 block_node = terrain_node.attachNewNode(f'block_{x}_{y}_{height}')
                 block_node.setPos(x * self.block_size, y * self.block_size, height * self.block_size)
                 
-                # Déterminer le type de bloc
-                block_type = self.getBlockType(height, height)
-                
                 # Attacher le modèle du bloc
-                self.blocks[block_type].instanceTo(block_node)
+                self.blocks['grassBlock'].instanceTo(block_node)
                 
                 # Ajouter la collision
                 self.addBlockCollision(block_node)
@@ -63,38 +65,47 @@ class Terrain():
                 self.terrain_blocks.append({
                     'node': block_node,
                     'pos': (x * self.block_size, y * self.block_size, height * self.block_size),
-                    'type': block_type
+                    'type': 'grassBlock'
                 })
 
-    def getBlockType(self, z, surface_height):
-        """Détermine le type de bloc selon sa profondeur."""
-        if z == surface_height:
-            return 'grassBlock'
-        elif z < surface_height and z > surface_height - 3 :
-            return 'dirtBlock'
-        else:
-            return 'stoneBlock'
 
     def addBlockCollision(self, block_node):
-        """Ajoute une collision à un bloc."""
-        blockSolid = CollisionBox((-1, -1, -1), (1, 1, 1))
-        blockNode = CollisionNode('block-collision')
-        blockNode.addSolid(blockSolid)
-        blockNode.setIntoCollideMask(self.game.worldMask)
-        collider = block_node.attachNewNode(blockNode)
-        collider.setPythonTag('owner', block_node)
+        """Ajoute une collision à un bloc.
+        args:
+            block_node (NodePath): le noeud du bloc auquel ajouter la collision
+        Returns:
+            None
+        """
+        blockSolid = CollisionBox((-1, -1, -1), (1, 1, 1)) # Créer une boîte de collision
+        blockNode = CollisionNode('block-collision') # Créer un noeud de collision
+        blockNode.addSolid(blockSolid) # Ajouter la boîte solide au noeud de collision
+        blockNode.setIntoCollideMask(self.game.worldMask) # Définir le masque de collision
+        collider = block_node.attachNewNode(blockNode) # Attacher le noeud de collision au bloc
+        collider.setPythonTag('owner', block_node) # Tag pour référence future
 
     def unloadTerrain(self):
-        """Décharge le terrain de la mémoire."""
+        """Décharge le terrain de la mémoire.
+        Args:
+            None
+        Returns:
+            None
+        """
         for block in self.terrain_blocks:
-            block['node'].removeNode()
-        self.terrain_blocks.clear()
+            block['node'].removeNode() # Supprimer le noeud du bloc
+        self.terrain_blocks.clear() # Vider la liste des blocks
 
     def getSurfaceLevel(self, x, y):
-        liste = []
+        """Obtient le niveau de surface (hauteur) à une position donnée.
+        Args:
+            x (float): position x
+            y (float): position y
+        Returns:
+            float: niveau de surface (hauteur) à la position donnée
+        """
+        liste = [] # liste des hauteurs des blocks à la position (x, y)
         for elt in self.terrain_blocks:
-            if elt['pos'][0] >= x and elt['pos'][0] < x + self.block_size and elt['pos'][1] >= y and elt['pos'][1] < y + self.block_size:
-                liste.append(elt['pos'][2])
+            if elt['pos'][0] >= x and elt['pos'][0] < x + self.block_size and elt['pos'][1] >= y and elt['pos'][1] < y + self.block_size: 
+                liste.append(elt['pos'][2]) # ajouter la hauteur du block à la liste
         if liste != []:
-            return max(liste) 
-        return 0
+            return max(liste) # retourner la hauteur maximale trouvée
+        return 0 # si aucun block trouvé, retourner 0

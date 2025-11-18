@@ -31,14 +31,14 @@ class Player():
         """
         
         self.game = game  # référence vers la classe principale
-        self.screen = game.screen
+        self.screen = game.screen # référence vers l'écran de jeu
         self.input = InputState() # gestion des entrées utilisateur
 
         # Infos joueur
         self.health = 100 # santé actuelle du joueur
         self.maxhealth = 100 # santé maximale du joueur
         self.position = position # position du joueur [x,y,z]
-        self.is_attacking = False
+        self.is_attacking = False # savoir si le joueur est en train d'attaquer
         self.weapon = None # arme du joueur
         
         # Physique
@@ -46,10 +46,10 @@ class Player():
         self.gravity = -20 # gravité du jeu
         self.jumpSpeed = 10.0 # vitesse du joueur sur le plan vertical
         self.onGround = False # savoir si le joueur est dans les airs
-        self.IsCrouched = False
+        self.IsCrouched = False # savoir si le joueur est accroupi
         self.height_player = 3.0 # hauteur du joueur
         self.moveSpeed = 10 #v itesse du joueur sur le plan horizontal
-        self.initialSpeed = 10
+        self.initialSpeed = 10 # vitesse initiale du joueur
         
         # Contrôles
         self.setupControls() # configuration des contrôles
@@ -60,14 +60,14 @@ class Player():
         self.cameraSwingActivated = True # savoir si la sourie est dans le jeu ou non
         self.cameraSwingFactor = 10 # facteur de la sourie
 
-        #Barre de vie
+        # Fond de la barre de vie
         cm = CardMaker("fond")
         cm.setFrame(0, 1, 0, 0.05)
         self.fond = aspect2d.attachNewNode(cm.generate())
         self.fond.setPos(-0.5, 0, -0.9)
         self.fond.setColor(0.2, 0.2, 0.2, 1)
 
-        # Barre rouge
+        # Barre de vie
         cm2 = CardMaker("barre")
         cm2.setFrame(0, 1, 0, 0.05)
         self.barre = aspect2d.attachNewNode(cm2.generate())
@@ -81,24 +81,23 @@ class Player():
         Returns:
             None
         """
-
         # mouvement
-        self.input.watchWithModifiers("forward",  "z")
-        self.input.watchWithModifiers("backward", "s")
-        self.input.watchWithModifiers("left",     "q")
-        self.input.watchWithModifiers("right",    "d")
+        self.input.watchWithModifiers("forward",  self.game.menu.bindings["Avancer"])
+        self.input.watchWithModifiers("backward", self.game.menu.bindings["Reculer"])
+        self.input.watchWithModifiers("left",     self.game.menu.bindings["Gauche"])
+        self.input.watchWithModifiers("right",    self.game.menu.bindings["Droite"])
         # saut
-        self.input.watchWithModifiers("jump", "space")
+        self.input.watchWithModifiers("jump", self.game.menu.bindings["Saut"])
         # sprint
-        self.input.watchWithModifiers("sprint", "shift")
+        self.input.watchWithModifiers("sprint", self.game.menu.bindings["Sprint"])
         # accroupi
-        self.input.watchWithModifiers("crouch", "control")
+        self.input.watchWithModifiers("crouch", self.game.menu.bindings["Accroupir"]    )
         # attaque
-        self.input.watchWithModifiers("attack", "mouse1")
+        self.input.watchWithModifiers("attack", self.game.menu.bindings["Attaque"])
         #sortir de la fenetre
-        self.input.watchWithModifiers("exit", "escape")
+        self.input.watchWithModifiers("exit", self.game.menu.bindings["Sortir"])
         #entrer dans la fenetre
-        self.input.watchWithModifiers("enter", "mouse3")
+        self.input.watchWithModifiers("enter", self.game.menu.bindings["mouse1"])
 
 
     def setupCamera(self, position):
@@ -208,22 +207,22 @@ class Player():
         if self.input.isSet('right'): # s'il se deplace vers la droite
             x_movement += dt * self.moveSpeed * cos(degToRad(self.screen.camera.getH()))
             y_movement += dt * self.moveSpeed * sin(degToRad(self.screen.camera.getH()))
-        if self.input.isSet('exit'):
+        if self.input.isSet('exit'): # sortir de la fenetre
             self.releaseMouse()
-        if self.input.isSet('enter'):
+        if self.input.isSet('enter'): # entrer dans la fenetre
             self.captureMouse()
 
-        if self.input.isSet("sprint") and not self.input.isSet("crouch"):
-            self.moveSpeed = self.initialSpeed*2
+        if self.input.isSet("sprint") and not self.input.isSet("crouch"): #sprint
+            self.moveSpeed = self.initialSpeed*2 
         else:
             self.moveSpeed = self.initialSpeed
         # Saut et traversée
-        if self.input.isSet('jump') and self.onGround and not self.input.isSet("crouch"):
+        if self.input.isSet('jump') and self.onGround and not self.input.isSet("crouch"): #jump
             self.zVel = self.jumpSpeed # ajout de la velocité vers le haut
             self.onGround = False # il n'est plus sur le sol
             
-        if self.input.isSet('crouch') and not self.IsCrouched:
-            self.height_player = 1.5 #crouch
+        if self.input.isSet('crouch') and not self.IsCrouched: #crouch
+            self.height_player = 1.5
             self.screen.camera.setZ(self.screen.camera.getZ() - 1.5)
             self.IsCrouched = True
         elif not self.input.isSet('crouch') and self.IsCrouched:
@@ -272,7 +271,6 @@ class Player():
             None
         """
         if not self.cameraSwingActivated:
-            print("eee")
             return
         # Si la souris est disponible
         # récupérer le mouvement relatif de la souris
@@ -346,9 +344,15 @@ class Player():
                 target.changeHealth(2)
 
     def died(self):
-        self.crosshairs.destroy()
-        self.fond.removeNode()
-        self.barre.removeNode()
+        """logique quand le joueur meurt.
+        Args:
+            None
+        Returns:
+            None
+        """
+        self.crosshairs.destroy() # enlever le crosshairs
+        self.fond.removeNode() # enlever le fond de la barre de vie 
+        self.barre.removeNode() # enlever la barre de vie
 
         self.message = OnscreenText(
             text="Vous etes mort",
