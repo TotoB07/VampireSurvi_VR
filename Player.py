@@ -159,15 +159,15 @@ class Player():
             self.updateMouseLook(dt) # on modifie sa vision
 
             # logique pour l'attaque ( a modifier quand y'aura pls monstre )
-            if self.input.isSet("attaque") and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
+            if self.input.isSet("attack") and not self.is_attacking: # si le joueur appuye sur la touche pour attaquer
                 for monster in self.game.monsters:
                     distance = monster.getDistanceToPlayer() # on regarde la distance
                     # on regarde si le joueur est a la bonne distance
                     Is_attack_range = True
                     for elt in distance:
-                        if self.weapon == None and abs(elt) > 3: # si le joueur n'a pas d'arme
+                        if self.weapon == None and abs(elt) > 4 * self.game.terrain.block_size: # si le joueur n'a pas d'arme
                             Is_attack_range = False # le monstre est trop loin
-                        elif self.weapon != None and abs(elt) > self.weapon.range: # si le joueur a une arme
+                        elif self.weapon != None and abs(elt) > self.weapon.range * self.game.terrain.block_size: # si le joueur a une arme
                             Is_attack_range = False # le monstre est trop loin
                     if Is_attack_range:
                         self.attaque(monster) # on attaque

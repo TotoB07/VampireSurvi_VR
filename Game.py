@@ -1,6 +1,5 @@
 #programmes
-import Player
-import Monster
+import Player, GameManager
 import Terrain
 import Weapon
 import random
@@ -53,12 +52,10 @@ class MyGame():
         self.setupLights() # appel methode setupLights
         
         self.terrain = Terrain.Terrain(self, self.block) # creation terrain
+        self.GameManager = GameManager.GameManagement(self)
         self.player = Player.Player(self, [30,30,self.terrain.max_height * self.terrain.block_size]) # creation player
-        self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 40, 4, 2.0) # creation arme
+        self.weapon = Weapon.Weapon("Épée en bois", "Une épée basique en bois.", 100, 4, 1.0) # creation arme
         self.monsters = []
-
-        for i in range(1,5):
-            self.monsters.append(Monster.Monster(self, [30,30,100], 100, 2, 10, 10, 50)) # creation monstre
         
         self.player.weapon = self.weapon # assigner les degats de l'arme au joueur
         
@@ -81,6 +78,7 @@ class MyGame():
             self.cTrav.traverse(render) 
         if self.gametime > 3:
             self.player.update(dt) #update le player
+            self.GameManager.update(dt)
             for monster in self.monsters:
                 monster.update(dt) #update le monstre
         

@@ -128,6 +128,7 @@ class Monster:
         Returns:
             None
         """
+        self.game.monsters.remove(self)
         self.monster.removeNode() # supprimer monstre
 
     def nextAction(self, dt):
@@ -141,7 +142,7 @@ class Monster:
         good_distance = True # savoir s'i le joueur est dans la range du monstre
         
         for elt in distance:
-            if abs(elt) > self.attack_range//10: # savoir si le joueur est trop loin
+            if abs(elt) > self.attack_range * self.game.terrain.block_size: # savoir si le joueur est trop loin
                 good_distance = False 
         
         if good_distance: 
