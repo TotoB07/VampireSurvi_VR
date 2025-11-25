@@ -47,7 +47,7 @@ class Monster:
         self.initialTimeToReload = 3 # temps initial pour que le monstre reattaque
         self.timeToReload = self.initialTimeToReload # temps avant que le monstre reattaque
         self.gravity = -20  # accélération due à la gravité
-        self.size = 2
+        self.size = 5
         
 
         self.loadMonster() # chargement du monstre
@@ -83,14 +83,14 @@ class Monster:
             None
         """
         terrain_level = self.game.terrain.getSurfaceLevel(x ,y) # obtenir le niveau du terrain aux coordonnées (x, y)
-        if self.position[2] > terrain_level + self.game.terrain.block_size: # si le monstre est au-dessus du sol
-            if self.position[2] + self.gravity * dt < terrain_level + self.game.terrain.block_size: # si le monstre va toucher le sol
-                self.position[2] = terrain_level + self.game.terrain.block_size # placer le monstre au niveau du sol
+        if self.position[2] > terrain_level + self.size: # si le monstre est au-dessus du sol
+            if self.position[2] + self.gravity * dt < terrain_level + self.size: # si le monstre va toucher le sol
+                self.position[2] = terrain_level + self.size # placer le monstre au niveau du sol
             else:
                 self.position[2] += self.gravity * dt # appliquer la gravité
         #ajouter le fait de sauter un block de hauteur maximum
-        if self.position[2] <= terrain_level + self.game.terrain.block_size: # si le monstre est au niveau du sol
-            self.position[2] = terrain_level + self.game.terrain.block_size # placer le monstre au niveau du sol
+        if self.position[2] <= terrain_level + self.size: # si le monstre est au niveau du sol
+            self.position[2] = terrain_level + self.size # placer le monstre au niveau du sol
         self.monster.setZ(self.position[2]) # mettre à jour la position en Z du monstre
         
             
@@ -110,7 +110,7 @@ class Monster:
         Returns:
             None
         """
-        self.monster = loader.loadModel('model3d/stone-block.glb') # chargement model du monstre
+        self.monster = loader.loadModel('model3d/squelette.glb') # chargement model du monstre
         self.monster.reparentTo(self.screen.render)  # Attacher au render
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # placer le monstre au position
         
@@ -149,7 +149,7 @@ class Monster:
 
         good_distance = True # savoir s'i le joueur est dans la range du monstre
         for elt in distance:
-            if abs(elt) > self.attack_range * self.game.terrain.block_size: # savoir si le joueur est trop loin
+            if abs(elt) > self.attack_range * self.size//2: # savoir si le joueur est trop loin
                 good_distance = False 
         if good_distance: 
             self.attack(self.game.player) # le monstre attaque s'il est dans la range
@@ -185,7 +185,7 @@ class Monster:
             if not self.isWallCollision(self.position[0], self.position[1]): # verifier s'il y a une collision avec un mur
                 self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
                 self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
-                self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
+                self.gravityEffect(dt, self.position[0] - 0.5 * self.size, self.position[1])
             else:
                 self.bypassWallCollision() #contourne le mur s'il y a une collision
         self.monster.setPos(self.position[0], self.position[1], self.position[2]) # modifier les positions du mosntre  
@@ -209,7 +209,7 @@ class Monster:
         Returns:
             (bool): True si collision, False sinon
         """
-        if self.game.terrain.getSurfaceLevel(new_x, new_y) > self.position[2] + self.game.terrain.block_size:
+        if self.game.terrain.getSurfaceLevel(new_x, new_y) > self.position[2] + self.size:
             return True
         return False
     

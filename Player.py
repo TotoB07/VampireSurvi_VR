@@ -47,7 +47,8 @@ class Player():
         self.jumpSpeed = 10.0 # vitesse du joueur sur le plan vertical
         self.onGround = False # savoir si le joueur est dans les airs
         self.IsCrouched = False # savoir si le joueur est accroupi
-        self.height_player = 3.0 # hauteur du joueur
+        self.height_player = 3.5 # hauteur du joueur
+        self.initial_height = 3.5
         self.moveSpeed = 10 #v itesse du joueur sur le plan horizontal
         self.initialSpeed = 10 # vitesse initiale du joueur
         
@@ -222,11 +223,11 @@ class Player():
             self.onGround = False # il n'est plus sur le sol
             
         if self.input.isSet('crouch') and not self.IsCrouched: #crouch
-            self.height_player = 1.5
+            self.height_player = self.initial_height //1.5
             self.screen.camera.setZ(self.screen.camera.getZ() - 1.5)
             self.IsCrouched = True
         elif not self.input.isSet('crouch') and self.IsCrouched:
-            self.height_player = 3.0
+            self.height_player = self.initial_height
             self.screen.camera.setZ(self.screen.camera.getZ() + 1.5) #uncrouch
             self.IsCrouched = False
 
