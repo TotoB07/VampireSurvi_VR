@@ -165,9 +165,9 @@ class Player():
                     # on regarde si le joueur est a la bonne distance
                     Is_attack_range = True
                     for elt in distance:
-                        if self.weapon == None and abs(elt) > 4 * self.game.terrain.block_size: # si le joueur n'a pas d'arme
+                        if self.weapon == None and abs(elt) > 4 * monster.size: # si le joueur n'a pas d'arme
                             Is_attack_range = False # le monstre est trop loin
-                        elif self.weapon != None and abs(elt) > self.weapon.range * self.game.terrain.block_size: # si le joueur a une arme
+                        elif self.weapon != None and abs(elt) > self.weapon.range * monster.size: # si le joueur a une arme
                             Is_attack_range = False # le monstre est trop loin
                     if Is_attack_range:
                         self.attaque(monster) # on attaque

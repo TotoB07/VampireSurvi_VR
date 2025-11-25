@@ -1,5 +1,5 @@
 #librairies
-from math import sin, cos, pi
+from math import sin, cos, pi, atan2, degrees
 
 #librairies panda3d
 from panda3d.core import Vec3
@@ -47,6 +47,7 @@ class Monster:
         self.initialTimeToReload = 3 # temps initial pour que le monstre reattaque
         self.timeToReload = self.initialTimeToReload # temps avant que le monstre reattaque
         self.gravity = -20  # accélération due à la gravité
+        self.size = 2
         
 
         self.loadMonster() # chargement du monstre
@@ -139,27 +140,23 @@ class Monster:
             None
         """
         distance = self.getDistanceToPlayer() # obtenir la distance entre le joueur et le monstre
-        good_distance = True # savoir s'i le joueur est dans la range du monstre
         
+        angle_to_player = atan2(distance[1], distance[0]) # Calculer l'angle vers le joueur
+        angle_to_player_degrees = degrees(angle_to_player)
+        
+        self.monster.setH(angle_to_player_degrees) # Faire tourner le monstre vers le joueur
+ 
+
+        good_distance = True # savoir s'i le joueur est dans la range du monstre
         for elt in distance:
             if abs(elt) > self.attack_range * self.game.terrain.block_size: # savoir si le joueur est trop loin
                 good_distance = False 
-        
         if good_distance: 
             self.attack(self.game.player) # le monstre attaque s'il est dans la range
         
         else: # sinon le monstre se deplace 
-            # on regarde quel axe est le plus grand
-            if max(abs(distance[0]), abs(distance[1])) == abs(distance[0]): # axe x est le plus grand
-                if distance[0] > 0: 
-                    self.Movement(dt, "droite") # on se deplace a droite
-                else:
-                    self.Movement(dt, "gauche") # on se deplace a gauche
-            else: # axe y est le plus grand
-                if distance[1] > 0:
-                    self.Movement(dt, "devant") # on se deplace devant
-                else:
-                    self.Movement(dt, "derrière") # on se deplace derriere
+            # Se déplacer devant soi (direction de heading)
+            self.Movement(dt, "devant")
 
     def getDistanceToPlayer(self):
         """optenir la distance entre le joueur est le monstre.
@@ -184,28 +181,7 @@ class Monster:
         Returns:
             None
         """
-        if orientation == "devant": # s'il se deplace vers l'avant
-            if not self.isWallCollision(self.position[0], self.position[1]): # verifier s'il y a une collision avec un mur
-                self.position[0] -= dt * self.speed * sin(degToRad(self.monster.getH())) 
-                self.position[1] += dt * self.speed * cos(degToRad(self.monster.getH()))
-                self.gravityEffect(dt, self.position[0], self.position[1] - 0.5 * self.game.terrain.block_size)
-            else:
-                self.bypassWallCollision() #contourne le mur s'il y a une collision
-        elif orientation == "derrière": # s'il se deplace vers l'arriere
-            if not self.isWallCollision(self.position[0], self.position[1] - self.game.terrain.block_size): # verifier s'il y a une collision avec un mur
-                self.position[0] += dt * self.speed * sin(degToRad(self.monster.getH()))
-                self.position[1] -= dt * self.speed * cos(degToRad(self.monster.getH()))
-                self.gravityEffect(dt, self.position[0] , self.position[1]- 0.5 * self.game.terrain.block_size)
-            else:
-                self.bypassWallCollision() #contourne le mur s'il y a une collision
-        elif orientation == "gauche": # s'il se deplace vers la gauche
-            if not self.isWallCollision(self.position[0] - self.game.terrain.block_size, self.position[1]): # verifier s'il y a une collision avec un mur
-                self.position[0] -= dt * self.speed * cos(degToRad(self.monster.getH()))
-                self.position[1] -= dt * self.speed * sin(degToRad(self.monster.getH()))
-                self.gravityEffect(dt, self.position[0] - 0.5 * self.game.terrain.block_size, self.position[1])
-            else:
-                self.bypassWallCollision() #contourne le mur s'il y a une collision
-        elif orientation == "droite": # s'il se deplace vers la droite
+        if orientation == "devant": # s'il se deplace vers la droite
             if not self.isWallCollision(self.position[0], self.position[1]): # verifier s'il y a une collision avec un mur
                 self.position[0] += dt * self.speed * cos(degToRad(self.monster.getH()))
                 self.position[1] += dt * self.speed * sin(degToRad(self.monster.getH()))
