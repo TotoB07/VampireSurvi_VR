@@ -19,7 +19,6 @@ class GameManagement():
         self.enemyVague = int(1.5 * (self.initialEnemyVague + self.difficulte) + self.vague * 10)
         self.initialEnemyVague = self.enemyVague
         self.maxMonsters = int(self.enemyVague //2 + (self.difficulte * 5))
-        print(self.enemyVague, self.maxMonsters)
     
     def spawn_monster(self):
         return Monster(self.game, [random.randint(0,self.game.terrain.terrain_width),random.randint(0,self.game.terrain.terrain_length),100], 100, 2, 10, 2, 50)
@@ -27,7 +26,6 @@ class GameManagement():
     def update(self, dt):
         self.timeNextMonster -= dt
         if self.enemyVague == 0 and len(self.game.monsters) == 0:
-            print("newvague")
             self.NewVague()
         if self.timeNextMonster <= 0 and self.enemyVague > 0 and len(self.game.monsters) < self.maxMonsters:
             self.game.monsters.append(self.spawn_monster())

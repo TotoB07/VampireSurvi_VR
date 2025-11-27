@@ -1,5 +1,5 @@
 #librairies
-from math import pi, sin, cos
+from math import pi, sin, cos, atan2, degrees
 
 #librairies panda3d
 from panda3d.core import CollisionNode, CollisionSphere, CollisionRay, BitMask32
@@ -170,10 +170,12 @@ class Player():
                             Is_attack_range = False # le monstre est trop loin
                         elif self.weapon != None and abs(elt) > self.weapon.range * monster.size: # si le joueur a une arme
                             Is_attack_range = False # le monstre est trop loin
+                    
                     if Is_attack_range:
                         self.attaque(monster) # on attaque
                         self.is_attacking = True # on indique su'il est en train d'attaquer
-                    self.input.set("attaque", False) # On remet a 0 la touche pour pas attaquer
+                        print("attaque")
+                    self.input.set("attack", False) # On remet a 0 la touche pour pas attaquer
 
             # logique pour savoir s'il est tjs en train d'attaquer
             if self.is_attacking:
@@ -330,6 +332,14 @@ class Player():
         properties.setCursorHidden(False) # afficher le curseur
         properties.setMouseMode(WindowProperties.M_absolute) # liberer la souris
         self.screen.win.requestProperties(properties) # appliquer les proprietes a la fenetre
+
+    def get_camera_heading_world(self, normalize=True):
+        """Retourne l'heading (H) de la caméra en degrés dans le repère global (render).
+        Si normalize=True, le résultat est dans [-180, 180)."""
+        h = self.screen.camera.getH(self.screen.render)
+        if normalize:
+            h = (h + 180.0) % 360.0 - 180.0
+        return h
 
     def attaque(self, target):
         """attaque du joueur.

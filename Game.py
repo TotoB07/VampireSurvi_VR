@@ -81,7 +81,7 @@ class MyGame():
             self.GameManager.update(dt)
             for monster in self.monsters:
                 monster.update(dt) #update le monstre
-        
+            
         return task.cont
         
     def setupSkybox(self):

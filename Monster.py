@@ -4,6 +4,7 @@ from math import sin, cos, pi, atan2, degrees
 #librairies panda3d
 from panda3d.core import Vec3
 from panda3d.core  import CollisionNode, CollisionBox
+from direct.actor.Actor import Actor
 
 
 def degToRad(deg):
@@ -47,12 +48,10 @@ class Monster:
         self.initialTimeToReload = 3 # temps initial pour que le monstre reattaque
         self.timeToReload = self.initialTimeToReload # temps avant que le monstre reattaque
         self.gravity = -20  # accélération due à la gravité
-        self.size = 5
+        self.size = 3.5
         
 
         self.loadMonster() # chargement du monstre
-
-        
         # - Configuration des collisions
         # - Animation du monstre
         # - Sons du monstre
@@ -104,23 +103,40 @@ class Monster:
         return self.health <= 0
 
     def loadMonster(self):
-        """chargement monstre.
-        Args:
-            None
-        Returns:
-            None
-        """
-        self.monster = loader.loadModel('model3d/squelette.glb') # chargement model du monstre
-        self.monster.reparentTo(self.screen.render)  # Attacher au render
-        self.monster.setPos(self.position[0], self.position[1], self.position[2]) # placer le monstre au position
-        
-        blockSolid = CollisionBox((-1,-1,-1), (1,1,1)) # creation boxe de collision
-        blockNode = CollisionNode('block-collision-node') # creer un node de collision pour le monstre
-        blockNode.addSolid(blockSolid) # ajouter le rayon de collision au node
-        # rendre ces nodes "into" pour la mask du monde
-        blockNode.setIntoCollideMask(self.game.worldMask) # definir le masque de collision
-        collider = self.monster.attachNewNode(blockNode) # attacher le node de collision au noeud du monstre
-        collider.setPythonTag('owner', self.monster) # tag python pour référencer le monstre
+        """Charger le modèle du monstre et initialiser collision/animations."""
+        model_path = 'model3d/monsterCarton.glb'
+        # essayer Actor (pour animations) puis fallback sur NodePath
+        try:
+            self.monster = Actor(model_path)
+        except Exception:
+            self.monster = loader.loadModel(model_path)
+
+        # attacher et positionner
+        self.monster.reparentTo(self.screen.render)
+        self.monster.setPos(self.position[0], self.position[1], self.position[2])
+
+        # détecter animations si Actor
+        self.walk_anim = None
+        try:
+            if isinstance(self.monster, Actor):
+                anims = list(self.monster.getAnimNames())
+                if 'walk' in anims:
+                    self.walk_anim = 'walk'
+                elif 'Walk' in anims:
+                    self.walk_anim = 'Walk'
+                elif anims:
+                    self.walk_anim = anims[0]
+        except Exception:
+            self.walk_anim = None
+        self.is_walking = False
+
+        # collider simple en sphere centré sur le modèle
+        blockSolid = CollisionBox((-1,-1,-1), (1,1,1))
+        blockNode = CollisionNode('monster-collision')
+        blockNode.addSolid(blockSolid)
+        blockNode.setIntoCollideMask(self.game.worldMask)
+        collider = self.monster.attachNewNode(blockNode)
+        collider.setPythonTag('owner', self.monster)
 
     def unloadMonster(self):
         """dechargement monstre.
@@ -140,11 +156,7 @@ class Monster:
             None
         """
         distance = self.getDistanceToPlayer() # obtenir la distance entre le joueur et le monstre
-        
-        angle_to_player = atan2(distance[1], distance[0]) # Calculer l'angle vers le joueur
-        angle_to_player_degrees = degrees(angle_to_player)
-        
-        self.monster.setH(angle_to_player_degrees) # Faire tourner le monstre vers le joueur
+        self.monster.setH(self.getAngleToPlayer(distance)) # Faire tourner le monstre vers le joueur
  
 
         good_distance = True # savoir s'i le joueur est dans la range du monstre
@@ -153,10 +165,19 @@ class Monster:
                 good_distance = False 
         if good_distance: 
             self.attack(self.game.player) # le monstre attaque s'il est dans la range
+            if self.is_walking:
+                self.stopWalkAnimation()
         
         else: # sinon le monstre se deplace 
             # Se déplacer devant soi (direction de heading)
             self.Movement(dt, "devant")
+            if not self.is_attacking:
+                self.playWalkAnimation()
+
+    def getAngleToPlayer(self, distance):
+        angle_to_player = atan2(distance[1], distance[0]) # Calculer l'angle vers le joueur
+        angle_to_player_degrees = degrees(angle_to_player)
+        return angle_to_player_degrees
 
     def getDistanceToPlayer(self):
         """optenir la distance entre le joueur est le monstre.
@@ -234,4 +255,27 @@ class Monster:
             None
         """
         self.health -= degats
+
+    def playWalkAnimation(self):
+        """Lancer l'animation de marche si disponible."""
+        if not self.is_walking and isinstance(self.monster, Actor) and self.walk_anim:
+            try:
+                self.monster.loop(self.walk_anim)
+                self.is_walking = True
+            except Exception as e:
+                print("Erreur playWalkAnimation:", e)
+
+    def stopWalkAnimation(self):
+        """Stopper l'animation de marche si elle tourne."""
+        if isinstance(self.monster, Actor) and self.walk_anim:
+            try:
+                self.monster.stop(self.walk_anim)
+            except Exception:
+                pass
+        else:
+            try:
+                self.monster.stop()
+            except Exception:
+                pass
+        self.is_walking = False
 
