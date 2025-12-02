@@ -26,6 +26,7 @@ class GameManagement():
     def update(self, dt):
         self.timeNextMonster -= dt
         if self.enemyVague == 0 and len(self.game.monsters) == 0:
+            self.vague += 1
             self.NewVague()
         if self.timeNextMonster <= 0 and self.enemyVague > 0 and len(self.game.monsters) < self.maxMonsters:
             self.game.monsters.append(self.spawn_monster())

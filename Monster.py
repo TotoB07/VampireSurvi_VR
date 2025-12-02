@@ -116,18 +116,7 @@ class Monster:
         self.monster.setPos(self.position[0], self.position[1], self.position[2])
 
         # détecter animations si Actor
-        self.walk_anim = None
-        try:
-            if isinstance(self.monster, Actor):
-                anims = list(self.monster.getAnimNames())
-                if 'walk' in anims:
-                    self.walk_anim = 'walk'
-                elif 'Walk' in anims:
-                    self.walk_anim = 'Walk'
-                elif anims:
-                    self.walk_anim = anims[0]
-        except Exception:
-            self.walk_anim = None
+        self.walk_anim = 'marche1'
         self.is_walking = False
 
         # collider simple en sphere centré sur le modèle
@@ -145,6 +134,7 @@ class Monster:
         Returns:
             None
         """
+        self.game.GameManager.score += 100
         self.game.monsters.remove(self)
         self.monster.removeNode() # supprimer monstre
 
@@ -247,6 +237,7 @@ class Monster:
             self.is_attacking = True # le monstre est en train d'attaquer
             target.barre.setScale(target.health/100, 1, 1)
 
+
     def changeHealth(self, degats):
         """modifier la vie du monstre.
         Args:
@@ -262,8 +253,9 @@ class Monster:
             try:
                 self.monster.loop(self.walk_anim)
                 self.is_walking = True
-            except Exception as e:
-                print("Erreur playWalkAnimation:", e)
+            except Exception:
+                pass
+
 
     def stopWalkAnimation(self):
         """Stopper l'animation de marche si elle tourne."""

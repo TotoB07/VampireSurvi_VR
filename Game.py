@@ -73,6 +73,7 @@ class MyGame():
         """
         dt = globalClock.getDt() # temps entre chaque frame
         self.gametime += dt
+        print(self.GameManager.score)
         
         if hasattr(self, "cTrav"): # vérifier si cTrav est défini
             self.cTrav.traverse(render) 
